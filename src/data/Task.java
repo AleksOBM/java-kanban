@@ -5,16 +5,16 @@ import java.util.Objects;
 public class Task {
 
     /// ID задачи
-    private Integer id;
+    protected Integer id;
 
     /// Заголовок задачи
-    private String title;
+    protected String title;
 
     /// Описание задачи
-    private String description;
+    protected String description;
 
     /// Статус задачи
-    private Status status;
+    protected Status status;
 
     /// Конструктор 1
     public Task(Integer id, String title, String description) {

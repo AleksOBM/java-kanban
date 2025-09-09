@@ -3,7 +3,7 @@ package data;
 public class Subtask extends Task {
 
     /// ID целевого эпика
-    private Integer epicId;
+    private final Integer epicId;
 
     /// Конструктор
     public  Subtask(Integer id, String title, String description, Status status, Integer epicId) {
@@ -14,11 +14,6 @@ public class Subtask extends Task {
     /// Получение ID целевого эпика
     public Integer getEpicId() {
         return epicId;
-    }
-
-    /// Внесение ID целевого эпика
-    public void setEpicId(Integer epicId) {
-        this.epicId = epicId;
     }
 
     @Override

@@ -14,7 +14,7 @@ public class Epic extends Task {
 
     /// Получение всех ID подзадач
     public ArrayList<Integer> getSubtaskIds() {
-        return subtaskIds;
+        return new ArrayList<>(subtaskIds);
     }
 
     /// Добавление новой ID подзадачи

@@ -128,7 +128,7 @@ public class Main {
         System.out.println("\n" + "-".repeat(20) + "\n");
 
         System.out.println("Удаление задачи по идентификатору:" + "\n");
-        System.out.println(manager.removeTask(2));
+        System.out.println(removeTask(2));
         System.out.println("\n" + "-".repeat(20) + "\n");
 
         System.out.println("Получение списка всех задач:" + "\n");
@@ -163,7 +163,7 @@ public class Main {
         System.out.println("\n" + "-".repeat(20) + "\n");
 
         System.out.println("Удаление подзадачи по идентификатору:" + "\n");
-        System.out.println(manager.removeSubtask(6));
+        System.out.println(removeSubtask(6));
         System.out.println("\n" + "-".repeat(20) + "\n");
 
         System.out.println("Получение списка всех подзадач:" + "\n");
@@ -171,7 +171,7 @@ public class Main {
         System.out.println("\n" + "-".repeat(20) + "\n");
 
         System.out.println("Получение подзадачи по идентификатору:" + "\n");
-        System.out.println(manager.getSubTask(9));
+        System.out.println(manager.getSubtask(9));
         System.out.println("\n" + "-".repeat(20) + "\n");
     }
 
@@ -186,17 +186,7 @@ public class Main {
         System.out.println("\n" + "-".repeat(20) + "\n");
 
         System.out.println("Удаление эпика по идентификатору:" + "\n");
-        System.out.println(manager.removeEpic(8));
-        System.out.println("\n" + "-".repeat(20) + "\n");
-
-        System.out.println("Переназначение подзадачи другому эпику:" + "\n");
-        System.out.println(manager.updateSubtask(new Subtask(
-                9,
-                null,
-                null,
-                null,
-                10
-        )));
+        System.out.println(removeEpic(8));
         System.out.println("\n" + "-".repeat(20) + "\n");
 
         System.out.println("Получение эпика со списком подзадач:" + "\n");
@@ -205,10 +195,6 @@ public class Main {
 
         System.out.println("Получение списка всех эпиков:" + "\n");
         System.out.println(getAllEpicsList());
-        System.out.println("\n" + "-".repeat(20) + "\n");
-
-        System.out.println("Удаление эпика с его подзадачами:" + "\n");
-        System.out.println(removeEpicWithSubtasks(4));
         System.out.println("\n" + "-".repeat(20) + "\n");
 
         System.out.println("Получение эпика по идентификатору:" + "\n");
@@ -277,6 +263,30 @@ public class Main {
             i++;
         }
         return epicList;
+    }
+
+    /// Удаление задачи по идентификатору
+    static String removeTask(int taskId) {
+        Task task = manager.getTask(taskId);
+        String removedTask = task.toString();
+        manager.removeTask(taskId);
+        return "removed" + removedTask;
+    }
+
+    /// Удаление подзадачи по идентификатору
+    static String removeSubtask(int subtaskId) {
+        Subtask subtask = manager.getSubtask(subtaskId);
+        String removedSubtask = subtask.toString();
+        manager.removeSubtask(subtaskId);
+        return "removed" + removedSubtask;
+    }
+
+    /// Удаление эпика по идентификатору
+    static String removeEpic(int epicId) {
+        Epic epic = manager.getEpic(epicId);
+        String removedEpic = epic.toString();
+        manager.removeEpic(epicId);
+        return "removed" + removedEpic;
     }
 
     /// Получение эпика со списком его подзадач
