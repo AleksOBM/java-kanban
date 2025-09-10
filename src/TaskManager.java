@@ -95,12 +95,12 @@ class TaskManager {
     }
 
     /// Получение списка всех подзадач в виде объекта *
-    public ArrayList<Subtask> getAllSubTasks() {
+    public ArrayList<Subtask> getAllSubTasksByEpic() {
         return new ArrayList<>(idToSubtask.values());
     }
 
     /// Получение списка всех подзадач эпика в виде объекта *
-    public ArrayList<Subtask> getAllSubTasks(int epicId) {
+    public ArrayList<Subtask> getAllSubTasksByEpic(int epicId) {
         if (!idToEpic.containsKey(epicId)) {
             return null;
         }
@@ -128,21 +128,13 @@ class TaskManager {
         Task oldTask = idToTask.get(id);
 
         if (newTask.getTitle() != null) {
-            if (newTask.getTitle().isEmpty()) {
-                oldTask.setTitle(null);
-            } else {
-                oldTask.setTitle(newTask.getTitle());
-            }
+            oldTask.setTitle(newTask.getTitle());
         } else {
             newTask.setTitle(oldTask.getTitle());
         }
 
         if (newTask.getDescription() != null) {
-            if (newTask.getDescription().isEmpty()) {
-                oldTask.setDescription(null);
-            } else {
-                oldTask.setDescription(newTask.getDescription());
-            }
+            oldTask.setDescription(newTask.getDescription());
         } else {
             newTask.setDescription(oldTask.getDescription());
         }
@@ -165,22 +157,17 @@ class TaskManager {
         Epic oldEpic = idToEpic.get(id);
 
         if (newEpic.getTitle() != null) {
-            if (newEpic.getTitle().isEmpty()) {
-                oldEpic.setTitle(null);
-            } else {
-                oldEpic.setTitle(newEpic.getTitle());
-            }
+            oldEpic.setTitle(newEpic.getTitle());
+        } else {
+            newEpic.setTitle(oldEpic.getTitle());
         }
 
         if (newEpic.getDescription() != null) {
-            if (newEpic.getDescription().isEmpty()) {
-                oldEpic.setDescription(null);
-            } else {
-                oldEpic.setDescription(newEpic.getDescription());
-            }
+            oldEpic.setDescription(newEpic.getDescription());
+        } else {
+            newEpic.setDescription(oldEpic.getDescription());
         }
 
-        updateEpicsStatus(oldEpic.getId());
         return oldEpic;
     }
 
@@ -193,23 +180,21 @@ class TaskManager {
         Subtask oldSubtask = idToSubtask.get(id);
 
         if (newSubtask.getTitle() != null) {
-            if (newSubtask.getTitle().isEmpty()) {
-                oldSubtask.setTitle(null);
-            } else {
-                oldSubtask.setTitle(newSubtask.getTitle());
-            }
+            oldSubtask.setTitle(newSubtask.getTitle());
+        } else {
+            newSubtask.setTitle(oldSubtask.getTitle());
         }
 
         if (newSubtask.getDescription() != null) {
-            if (newSubtask.getDescription().isEmpty()) {
-                oldSubtask.setDescription(null);
-            } else {
-                oldSubtask.setDescription(newSubtask.getDescription());
-            }
+            oldSubtask.setDescription(newSubtask.getDescription());
+        } else {
+            newSubtask.setDescription(oldSubtask.getDescription());
         }
 
         if (newSubtask.getStatus() != null) {
             oldSubtask.setStatus(newSubtask.getStatus());
+        } else {
+            newSubtask.setStatus(oldSubtask.getStatus());
         }
 
         updateEpicsStatus(oldSubtask.getEpicId());
@@ -230,8 +215,8 @@ class TaskManager {
         if (!idToEpic.containsKey(epicId)) {
             return false;
         }
+        removeAllSubTasksByEpic(epicId);
         idToEpic.remove(epicId);
-        removeAllSubTasks(epicId);
         return true;
     }
 
@@ -250,7 +235,7 @@ class TaskManager {
     }
 
     /// Удаление всех подзадач эпика по ID эпика
-    public void removeAllSubTasks(int epicId) {
+    public void removeAllSubTasksByEpic(int epicId) {
         if (!idToEpic.containsKey(epicId)) {
             return;
         }
@@ -259,6 +244,7 @@ class TaskManager {
             idToSubtask.remove(subtaskId);
         }
         epic.removeAllSubTaskIds();
+        updateEpicsStatus(epicId);
     }
 
     /// Удаление всех задач *
@@ -273,7 +259,7 @@ class TaskManager {
     }
 
     /// Удаление всех подзадач *
-    public void removeAllSubTasks() {
+    public void removeAllSubTasksByEpic() {
         idToSubtask.clear();
         for (Epic epic : idToEpic.values()) {
             epic.removeAllSubTaskIds();
