@@ -259,7 +259,7 @@ class TaskManager {
     }
 
     /// Удаление всех подзадач *
-    public void removeAllSubTasksByEpic() {
+    public void removeAllSubTasks() {
         idToSubtask.clear();
         for (Epic epic : idToEpic.values()) {
             epic.removeAllSubTaskIds();
