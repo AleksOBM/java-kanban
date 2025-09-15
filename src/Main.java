@@ -2,12 +2,14 @@ import data.Epic;
 import data.Status;
 import data.Subtask;
 import data.Task;
+import manager.Managers;
+import manager.TaskManager;
 
 import java.util.ArrayList;
 
 public class Main {
 
-    static TaskManager manager = new TaskManager();
+    static TaskManager manager = Managers.getDefault();
 
     public static void main(String[] args) {
         insertStartData();
@@ -18,6 +20,31 @@ public class Main {
         testEpics();
 
         printListAll();
+    }
+
+    /// Метод из ТЗ пятого спринта
+    private static void printAllTasks(TaskManager manager) {
+        System.out.println("Задачи:");
+        for (Task task : manager.getAllTasks()) {
+            System.out.println(task);
+        }
+        System.out.println("Эпики:");
+        for (Task epic : manager.getAllEpics()) {
+            System.out.println(epic);
+
+            for (Task task : manager.getAllSubTasksByEpic(epic.getId())) {
+                System.out.println("--> " + task);
+            }
+        }
+        System.out.println("Подзадачи:");
+        for (Task subtask : manager.getAllSubtasks()) {
+            System.out.println(subtask);
+        }
+
+        System.out.println("История:");
+        for (Task task : manager.getHistory()) {
+            System.out.println(task);
+        }
     }
 
     /// Ввести исходные данные
@@ -339,7 +366,7 @@ public class Main {
     /// Получение списка всех подзадач
     static StringBuilder getAllSubtasksList() {
         StringBuilder subtaskList = new StringBuilder();
-        ArrayList<Subtask> subtasks = manager.getAllSubTasksByEpic();
+        ArrayList<Subtask> subtasks = manager.getAllSubtasks();
         int i = 1;
         for (Subtask subtask : subtasks) {
             if (i == 1) {
