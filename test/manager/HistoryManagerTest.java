@@ -25,14 +25,14 @@ public class HistoryManagerTest<T> {
 
         historyManager.add(new Subtask(3, "Hello", "World", Status.DONE, 2));
 
-        ArrayList<T> history = historyManager.getHistory();
+        ArrayList<T> history = (ArrayList<T>) historyManager.getHistory();
         assertNotNull(history, "История не возвращается.");
         assertEquals(3, history.size(), "История содержит неверное количество элементов.");
 
         for (int i = 4; i <= 11; i++) {
             historyManager.add(new Task(i, null, null));
         }
-        history = historyManager.getHistory();
+        history = (ArrayList<T>) historyManager.getHistory();
 
         assertEquals(10, history.size(),
                 "История имеет неправильное ограничение на максимальное количество элементов");

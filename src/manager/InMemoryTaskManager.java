@@ -7,17 +7,18 @@ import data.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 class InMemoryTaskManager implements TaskManager {
 
     /// Хранилище задач
-    private final HashMap<Integer, Task> idToTask = new HashMap<>();
+    private final Map<Integer, Task> idToTask = new HashMap<>();
 
     /// Хранилище эпиков
-    private final HashMap<Integer, Epic> idToEpic = new HashMap<>();
+    private final Map<Integer, Epic> idToEpic = new HashMap<>();
 
     /// Хранилище подзадач
-    private final HashMap<Integer, Subtask> idToSubtask = new HashMap<>();
+    private final Map<Integer, Subtask> idToSubtask = new HashMap<>();
 
     /// Менеджер истории просмотров
     HistoryManager<? extends Task> historyManager = Managers.getHistoryManager();
@@ -334,7 +335,7 @@ class InMemoryTaskManager implements TaskManager {
     ///  Получить последние 10 задач
     @Override
     public ArrayList<? extends Task> getHistory() {
-        return historyManager.getHistory();
+        return (ArrayList<? extends Task>) historyManager.getHistory();
     }
 
     /// Обновление статуса эпика

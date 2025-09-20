@@ -7,6 +7,7 @@ import manager.TaskManager;
 import manager.TaskManagerType;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
@@ -242,12 +243,12 @@ public class Main {
     static StringBuilder getListAll() {
         StringBuilder list = new StringBuilder();
         list.append("Задачи:").append("\n").append(getAllTasksList()).append("\n");
-        ArrayList<Epic> epics = manager.getAllEpics();
+        List<Epic> epics = manager.getAllEpics();
         int epicIndex = 1;
         for (Epic epic: epics) {
             list.append("\n").append("Эпик ").append(epicIndex).append(":\n");
             list.append(epic).append("\n");
-            ArrayList<Subtask> subtasks = manager.getAllSubTasksByEpic(epic.getId());
+            List<Subtask> subtasks = manager.getAllSubTasksByEpic(epic.getId());
             int subtaskIndex = 1;
             list.append("Подзадачи:").append("\n");
             for (Subtask subtask : subtasks) {
@@ -262,7 +263,7 @@ public class Main {
     /// Получение списка всех задач
     static StringBuilder getAllTasksList() {
         StringBuilder taskList = new StringBuilder();
-        ArrayList<Task> tasks = manager.getAllTasks();
+        List<Task> tasks = manager.getAllTasks();
         int i = 1;
         for (Task task : tasks) {
             if (i == 1) {
@@ -279,7 +280,7 @@ public class Main {
     /// Получение списка всех эпиков
     static StringBuilder getAllEpicsList() {
         StringBuilder epicList = new StringBuilder();
-        ArrayList<Epic> epics = manager.getAllEpics();
+        List<Epic> epics = manager.getAllEpics();
         int i = 1;
         for (Epic epic : epics) {
             if (i == 1) {
@@ -323,7 +324,7 @@ public class Main {
         Epic epic = manager.getEpic(epicId);
         list.append("Эпик").append(":\n");
         list.append(epic).append("\n");
-        ArrayList<Subtask> subtasks = manager.getAllSubTasksByEpic(epic.getId());
+        List<Subtask> subtasks = manager.getAllSubTasksByEpic(epic.getId());
         int subtaskIndex = 1;
         list.append("Подзадачи:").append("\n");
         for (Subtask subtask : subtasks) {
@@ -338,7 +339,7 @@ public class Main {
         StringBuilder list = new StringBuilder();
         Epic epic = manager.getEpic(epicId);
         String removedEpic = epic.toString();
-        ArrayList<Subtask> removedSudtasks = manager.getAllSubTasksByEpic(epicId);
+        List<Subtask> removedSudtasks = manager.getAllSubTasksByEpic(epicId);
         manager.removeEpic(epicId);
         manager.removeAllSubtasksByEpic(epicId);
 
@@ -354,7 +355,7 @@ public class Main {
     static StringBuilder removeAllEpicSubtasks(int epicId) {
         StringBuilder list = new StringBuilder();
         Epic epic = manager.getEpic(epicId);
-        ArrayList<Subtask> removedSudtasks = manager.getAllSubTasksByEpic(epicId);
+        List<Subtask> removedSudtasks = manager.getAllSubTasksByEpic(epicId);
         manager.removeAllSubtasksByEpic(epicId);
 
         for (Subtask subtask : removedSudtasks) {
@@ -367,7 +368,7 @@ public class Main {
     /// Получение списка всех подзадач
     static StringBuilder getAllSubtasksList() {
         StringBuilder subtaskList = new StringBuilder();
-        ArrayList<Subtask> subtasks = manager.getAllSubtasks();
+        List<Subtask> subtasks = manager.getAllSubtasks();
         int i = 1;
         for (Subtask subtask : subtasks) {
             if (i == 1) {
@@ -388,7 +389,7 @@ public class Main {
             return  null;
         }
         StringBuilder subtaskList = new StringBuilder();
-        ArrayList<Subtask> thisSubtasks = manager.getAllSubTasksByEpic(epic.getId());
+        List<Subtask> thisSubtasks = manager.getAllSubTasksByEpic(epic.getId());
         int i = 1;
         for (Subtask subtask : thisSubtasks) {
             if (i == 1) {

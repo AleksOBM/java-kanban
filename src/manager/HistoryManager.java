@@ -1,19 +1,12 @@
 package manager;
 
-import data.Epic;
-import data.Subtask;
 import data.Task;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface HistoryManager<T> {
 
-    ArrayList<T> getHistory();
+    List<T> getHistory();
 
-    void add(Task task);
-
-    void add(Epic epic);
-
-    void add(Subtask subtask);
-
+    void add(Task taskObject);
 }
