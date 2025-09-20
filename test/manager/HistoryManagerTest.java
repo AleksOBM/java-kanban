@@ -8,6 +8,7 @@ import data.Status;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,14 +26,14 @@ public class HistoryManagerTest<T> {
 
         historyManager.add(new Subtask(3, "Hello", "World", Status.DONE, 2));
 
-        ArrayList<T> history = (ArrayList<T>) historyManager.getHistory();
+        List<T> history = historyManager.getHistory();
         assertNotNull(history, "История не возвращается.");
         assertEquals(3, history.size(), "История содержит неверное количество элементов.");
 
         for (int i = 4; i <= 11; i++) {
             historyManager.add(new Task(i, null, null));
         }
-        history = (ArrayList<T>) historyManager.getHistory();
+        history = historyManager.getHistory();
 
         assertEquals(10, history.size(),
                 "История имеет неправильное ограничение на максимальное количество элементов");
