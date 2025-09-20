@@ -40,7 +40,7 @@ public interface TaskManager {
 
     boolean removeSubtask(int subtaskId);
 
-    void removeAllSubTasksByEpic(int epicId);
+    void removeAllSubtasksByEpic(int epicId);
 
     void removeAllTasks();
 
@@ -48,5 +48,5 @@ public interface TaskManager {
 
     void removeAllSubTasks();
 
-    ArrayList<Task> getHistory();
+    ArrayList<? extends Task> getHistory();
 }

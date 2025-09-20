@@ -4,47 +4,27 @@ import data.Subtask;
 import data.Task;
 import manager.Managers;
 import manager.TaskManager;
+import manager.TaskManagerType;
 
 import java.util.ArrayList;
 
 public class Main {
 
-    static TaskManager manager = Managers.getDefault();
+    static TaskManager manager = Managers.getTaskManager(TaskManagerType.IN_MEMORY);
 
     public static void main(String[] args) {
+
         insertStartData();
+
         printListAll();
 
-        testTasks();
         testSubtasks();
         testEpics();
+        testTasks();
 
         printListAll();
-    }
 
-    /// Метод из ТЗ пятого спринта
-    private static void printAllTasks(TaskManager manager) {
-        System.out.println("Задачи:");
-        for (Task task : manager.getAllTasks()) {
-            System.out.println(task);
-        }
-        System.out.println("Эпики:");
-        for (Task epic : manager.getAllEpics()) {
-            System.out.println(epic);
-
-            for (Task task : manager.getAllSubTasksByEpic(epic.getId())) {
-                System.out.println("--> " + task);
-            }
-        }
-        System.out.println("Подзадачи:");
-        for (Task subtask : manager.getAllSubtasks()) {
-            System.out.println(subtask);
-        }
-
-        System.out.println("История:");
-        for (Task task : manager.getHistory()) {
-            System.out.println(task);
-        }
+        printHistory();
     }
 
     /// Ввести исходные данные
@@ -134,6 +114,19 @@ public class Main {
         ));
     }
 
+    /// Вывести историю
+    static void printHistory() {
+        StringBuilder stringBuilder;
+        System.out.println("История:");
+        int i = 1;
+        for (Task task : manager.getHistory()) {
+            stringBuilder = new StringBuilder();
+            stringBuilder.append(i).append(". ").append(task);
+            System.out.println(stringBuilder);
+            i++;
+        }
+    }
+
     /// Вывести все данные
     static void printListAll() {
         System.out.println("\n" + "-".repeat(20) + "\n");
@@ -164,6 +157,10 @@ public class Main {
 
         System.out.println("Получение задачи по идентификатору:" + "\n");
         System.out.println(manager.getTask(3));
+        System.out.println("\n" + "-".repeat(20) + "\n");
+
+        System.out.println("Получение задачи по идентификатору:" + "\n");
+        System.out.println(manager.getTask(1));
         System.out.println("\n" + "-".repeat(20) + "\n");
     }
 
@@ -199,6 +196,10 @@ public class Main {
 
         System.out.println("Получение подзадачи по идентификатору:" + "\n");
         System.out.println(manager.getSubtask(9));
+        System.out.println("\n" + "-".repeat(20) + "\n");
+
+        System.out.println("Получение подзадачи по идентификатору:" + "\n");
+        System.out.println(manager.getSubtask(5));
         System.out.println("\n" + "-".repeat(20) + "\n");
     }
 
@@ -339,7 +340,7 @@ public class Main {
         String removedEpic = epic.toString();
         ArrayList<Subtask> removedSudtasks = manager.getAllSubTasksByEpic(epicId);
         manager.removeEpic(epicId);
-        manager.removeAllSubTasksByEpic(epicId);
+        manager.removeAllSubtasksByEpic(epicId);
 
         list.append("removed").append(removedEpic).append("\n");
         for (Subtask subtask : removedSudtasks) {
@@ -354,7 +355,7 @@ public class Main {
         StringBuilder list = new StringBuilder();
         Epic epic = manager.getEpic(epicId);
         ArrayList<Subtask> removedSudtasks = manager.getAllSubTasksByEpic(epicId);
-        manager.removeAllSubTasksByEpic(epicId);
+        manager.removeAllSubtasksByEpic(epicId);
 
         for (Subtask subtask : removedSudtasks) {
             list.append("removed").append(subtask).append("\n");
