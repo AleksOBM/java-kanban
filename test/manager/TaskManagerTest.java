@@ -29,10 +29,10 @@ public class TaskManagerTest<T extends Task> {
 
     static List<Subtask> subtasks;
 
-    void updateTaskHistory(ArrayList<T> history) {
+    void updateTaskHistory(List<Task> history) {
         manager.getTask(taskId);
         history.clear();
-        history.addAll((ArrayList<? extends T>) manager.getHistory());
+        history.addAll(manager.getHistory());
     }
 
     @BeforeEach
@@ -75,7 +75,7 @@ public class TaskManagerTest<T extends Task> {
         epicId = manager.setEpic(epic).getId();
 
         // Добавить первую подзадачу в созданный эпик
-        manager.setSubTask(new Subtask(
+        manager.setSubtask(new Subtask(
                 777,
                 "This is first Subtask",
                 "This is description of first Subtask",
@@ -84,7 +84,7 @@ public class TaskManagerTest<T extends Task> {
         ));
 
         // Добавить вторую подзадачу в созданный эпик
-        manager.setSubTask(new Subtask(
+        manager.setSubtask(new Subtask(
                 null,
                 "This is second Subtask",
                 "This is description of second Subtask",
@@ -93,7 +93,7 @@ public class TaskManagerTest<T extends Task> {
         ));
 
         // Добавить третью подзадачу в созданный эпик
-        manager.setSubTask(new Subtask(
+        manager.setSubtask(new Subtask(
                 null,
                 "This is third Subtask",
                 "This is description of third Subtask",
@@ -142,7 +142,7 @@ public class TaskManagerTest<T extends Task> {
 
     @Test
     void shouldBeOneElementOfHistoryList() {
-        ArrayList<T> history = (ArrayList<T>) manager.getHistory();
+        List<Task> history = new ArrayList<>(manager.getHistory());
         assertEquals(3, history.size(), "Неверное количество задач в истории.");
     }
 
@@ -154,25 +154,27 @@ public class TaskManagerTest<T extends Task> {
 
     @Test
     void shouldBeTwoElementOfHistoryListAfterUpdateAndGet() {
-        ArrayList<T> history = (ArrayList<T>) manager.getHistory();
+        List<Task> history = new ArrayList<>(manager.getHistory());
         updateTaskHistory(history);
-        assertEquals(4, history.size(), "Неверное количество задач в истории.");
+        assertEquals(3, history.size(), "Неверное количество задач в истории.");
     }
 
     @Test
     void shouldBeStatusEqualsOfCreatedTaskAndFirstTaskOfHistoryListAfterUpdateAndGet() {
-        ArrayList<T> history = (ArrayList<T>) manager.getHistory();
+        manager.updateTask(new Task(1, null, null, Status.NEW));
+        List<Task> history = new ArrayList<>(manager.getHistory());
         updateTaskHistory(history);
-        assertEquals(task.getStatus(), history.getFirst().getStatus(),
-                "Статус созданной задачи не соответствует статусу первой задачи из истории."
+        Task testedTask = manager.getTask(1);
+        assertEquals(testedTask.getStatus(), history.getLast().getStatus(),
+                "Статус созданной задачи не соответствует статусу последней задачи из истории."
         );
     }
 
     @Test
     void shouldBeStatusEqualsOfSavedTaskAndLastTaskOfHistoryListAfterUpdateAndGet() {
-        ArrayList<T> history = (ArrayList<T>) manager.getHistory();
+        List<Task> history = new ArrayList<>(manager.getHistory());
         updateTaskHistory(history);
-        assertEquals(savedTask.getStatus(), history.getLast().getStatus(),
+        assertEquals(manager.getTask(1).getStatus(), history.getLast().getStatus(),
                 "Статус сохраненной задачи не соответствует статусу последней задачи из истории."
         );
     }
@@ -205,7 +207,15 @@ public class TaskManagerTest<T extends Task> {
     @Test
     void shouldUpdateEpicTitleWhenUpdateEpic() {
         manager.updateEpic(new Epic(2, "HelloWorld!", null));
-        assertEquals("HelloWorld!", savedEpic.getTitle(), "Менеджер неправильно обновляет эпик.");
+        assertEquals("HelloWorld!", manager.getEpic(2).getTitle(), "Менеджер неправильно обновляет эпик.");
+    }
+
+    @Test
+    void shouldReturnTwoAfterSetNewIdOfCashedEpic() {
+        manager.getEpic(2).setId(3);
+        int testEpicId = manager.getAllEpics().getLast().getId();
+        assertEquals(2, testEpicId,
+                "Изменение эпика через сеттер влияет на эпик хранящийся в менеджере");
     }
 
     @Test
@@ -216,7 +226,8 @@ public class TaskManagerTest<T extends Task> {
     @Test
     void shouldBeTwoSubtaskIdsContainsOfSavedEpicAfterRemoveSubtask() {
         manager.removeSubtask(3);
-        assertEquals(1, savedEpic.getSubtaskIds().size(),
+        Epic testedEpic = manager.getEpic(2);
+        assertEquals(1, testedEpic.getSubtaskIds().size(),
                 "Сохраненный эпик возвращает неверное количество идентификаторов подзадач " +
                         "после удаления подзадачи.");
     }
@@ -224,7 +235,8 @@ public class TaskManagerTest<T extends Task> {
     @Test
     void shouldBeIsEmptySubtaskListAfterRemoveAllSubtasks() {
         manager.removeAllSubtasksByEpic(epicId);
-        assertEquals("[]", savedEpic.getSubtaskIds().toString(),
+        Epic testedEpic = manager.getEpic(epicId);
+        assertEquals("[]", testedEpic.getSubtaskIds().toString(),
                 "Список идентификаторов подзадач эпика должен быть пуст после удаления всех подзадач эпика.");
     }
 
@@ -234,8 +246,18 @@ public class TaskManagerTest<T extends Task> {
     }
 
     @Test
+    void shouldReturnStatusNewWhenAllSubtasksInStatusesNull() {
+        manager.setSubtask(new Subtask(null, null, null, null, 2));
+        manager.setSubtask(new Subtask(null, null, null, null, 2));
+        manager.removeSubtask(3);
+        manager.removeSubtask(4);
+        assertEquals(Status.NEW, manager.getEpic(2).getStatus(),
+                "Эпик не выставляет статус NEW когда все подзадачи в статусе null");
+    }
+
+    @Test
     void shouldReturnNullWhenAddingSubtaskWithMissingId() {
-        manager.setSubTask(new Subtask(null, "Hello", "World", null, 777));
+        manager.setSubtask(new Subtask(null, "Hello", "World", null, 777));
         assertEquals(2, subtasks.size(), "Подзадача добавляется в несуществующий эпик.");
     }
 
@@ -250,13 +272,27 @@ public class TaskManagerTest<T extends Task> {
     @Test
     void shouldTwoWhenGetAllSubtasksByEpic() {
         assertEquals(2, manager.getAllSubTasksByEpic(2).size(),
-                "Менеджер возвращает не верное количество задач при вызове ");
+                "Менеджер возвращает не верное количество подзадач при вызове всех подзадач эпика");
+    }
+
+    @Test
+    void shouldReturnThreeAndFourWhenGetAllSubtasksIdsByEpic() {
+        Epic testEpic = manager.getEpic(2);
+        assertEquals(3, testEpic.getSubtaskIds().getFirst());
+        assertEquals(4, testEpic.getSubtaskIds().getLast(),
+                "Внутри эпиков остаются неактуальные id подзадач.");
+    }
+
+    @Test
+    void shouldReturnNullWhenTryingToGetAllSubtasks() {
+        assertNull( manager.getAllSubTasksByEpic(100),
+                "Менеджер не возвращает null при попытке получения всех подзадач несуществующего эпика");
     }
 
     @Test
     void shouldUpdateEpicStatusWhenAllHimSubtasksIsDone() {
         manager.updateSubtask(new Subtask(3, null, null, Status.DONE, null));
-        assertEquals(Status.DONE, savedEpic.getStatus(),
+        assertEquals(Status.DONE, manager.getAllEpics().getLast().getStatus(),
                 "Статус эпика не обновляется когда все его подзадачи завершены");
     }
 
@@ -288,7 +324,8 @@ public class TaskManagerTest<T extends Task> {
     @Test
     void shouldReturnEpicStatusNewAfterRemoveAllSubtasks() {
         manager.removeAllSubTasks();
-        assertEquals(Status.NEW, manager.getEpic(2).getStatus(),
+        Epic testedEpic = manager.getEpic(2);
+        assertEquals(Status.NEW, testedEpic.getStatus(),
                 "Менеджер не присваивает эпикам статус NEW после очистки главного хранилища подзадач.");
     }
 
