@@ -24,7 +24,7 @@ public class Epic extends Task {
     }
 
     /// Удаление всех ID подзадач
-    public void removeAllSubTaskIds() {
+    public void removeAllSubtaskIds() {
         subtaskIds.clear();
     }
 

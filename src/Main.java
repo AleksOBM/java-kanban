@@ -28,9 +28,9 @@ public class Main {
 
         testTasks();
 
-        printListAll();
-
         printHistory();
+
+        printListAll();
     }
 
     /// Ввести исходные данные

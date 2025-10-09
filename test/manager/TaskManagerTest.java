@@ -335,4 +335,39 @@ public class TaskManagerTest<T extends Task> {
         assertEquals("[]", manager.getAllSubtasks().toString(),
                 "Менеджер не очищает хранилище подзадач после очистки хранилища эпиков.");
     }
+
+    @Test
+    void shouldReturnTwoWhenAllTasksIsDeleted() {
+        manager.removeAllTasks();
+        assertEquals(2, manager.getHistory().getFirst().getId(),
+                "При удалении всех задач они не удаляются из истории"
+                );
+    }
+
+    @Test
+    void shouldReturnListWithOneElementWhenAllEpicsIsDeleted() {
+        manager.removeAllEpics();
+        assertEquals(1, manager.getHistory().size(),
+                "При удалении всех эпиков эпики не удаляются из истории с их подзадачами"
+        );
+    }
+
+    @Test
+    void shouldReturnTwoWhenAllSubtasksIsDeleted() {
+        manager.removeAllSubTasks();
+        assertEquals(2, manager.getHistory().size(),
+                "При удалении всех подзадач они не удаляются из истории"
+        );
+    }
+
+    @Test
+    void shouldReturnTwoWhenAllSubtasksByEpicIsDeleted() {
+        manager.setEpic(new Epic(null, null, null));
+        manager.setSubtask(new Subtask(null, null, null, null, 5));
+        manager.getSubtask(6);
+        manager.removeAllSubtasksByEpic(2);
+        assertEquals(3, manager.getHistory().size(),
+                "При удалении всех подзадач эпика они не удаляются из истории"
+        );
+    }
 }

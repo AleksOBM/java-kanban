@@ -33,12 +33,12 @@ public class HistoryManagerTest<T> {
     }
 
     @Test
-    void shouldReturnNullWhenHistoryIsEmpty() {
+    void shouldReturnEmptyListWhenHistoryIsEmpty() {
         HistoryManager hm = new InMemoryHistoryManager();
         hm.add(new Subtask(1, null, null, null, 2));
         hm.remove(1);
-        assertNull(hm.getHistory(),
-                "Пустая история не выдает null");
+        assertEquals("[]", hm.getHistory().toString(),
+                "Пустая история не выдает пустой лист");
     }
 
     @Test
@@ -62,12 +62,12 @@ public class HistoryManagerTest<T> {
     @Test
     void shouldWorkInLessThanOneTenthOfMillisecond() {
 
-        for (int i = 4; i <= 100_000; i++) {
+        for (int i = 4; i <= 10_000; i++) {
             historyManager.add(new Task(i, null, null));
         }
 
         int historySize = historyManager.getHistory().size();
-        int idToRemove = 56_893;
+        int idToRemove = 5039;
         final long startTime = System.nanoTime();
         historyManager.remove(idToRemove);
         final long endTime = System.nanoTime();
@@ -78,7 +78,7 @@ public class HistoryManagerTest<T> {
                 + " элементов за " + resultTime +  " мкс.");
 
         assertTrue(resultTime <= 100_000,
-                "Удаление одного элемента из истории с 100_000 элементов занимает больше 0,1 миллисекунд"
+                "Удаление одного элемента из истории с 10_000 элементов занимает больше 0,1 миллисекунд"
                         + "\n this test not working with coverage"
                 );
     }

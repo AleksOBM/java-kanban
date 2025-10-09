@@ -53,7 +53,7 @@ class EpicTest {
 
     @Test
     void shouldBeEmptyAfterRemoveAllSubtasks() {
-        epic.removeAllSubTaskIds();
+        epic.removeAllSubtaskIds();
         assertEquals("[]", epic.getSubtaskIds().toString(),
                 "Эпик не удаляет все подзадачи одной командой."
                 );
