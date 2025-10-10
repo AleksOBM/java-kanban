@@ -4,9 +4,11 @@ import data.Task;
 
 import java.util.List;
 
-public interface HistoryManager<T> {
+public interface HistoryManager {
 
-    List<T> getHistory();
+    void add(Task task);
 
-    void add(Task taskObject);
+    void remove(int id);
+
+    List<Task> getHistory();
 }

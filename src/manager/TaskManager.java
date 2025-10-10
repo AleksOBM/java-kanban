@@ -12,7 +12,7 @@ public interface TaskManager {
 
     Epic setEpic(Epic newEpic);
 
-    Subtask setSubTask(Subtask newSubtask);
+    Subtask setSubtask(Subtask newSubtask);
 
     Task getTask(int taskID);
 

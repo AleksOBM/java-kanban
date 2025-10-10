@@ -6,7 +6,6 @@ import manager.Managers;
 import manager.TaskManager;
 import manager.TaskManagerType;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -20,12 +19,18 @@ public class Main {
         printListAll();
 
         testSubtasks();
-        testEpics();
-        testTasks();
-
-        printListAll();
 
         printHistory();
+
+        testEpics();
+
+        printHistory();
+
+        testTasks();
+
+        printHistory();
+
+        printListAll();
     }
 
     /// Ввести исходные данные
@@ -52,21 +57,21 @@ public class Main {
                 "Найти девушку для знакомства",
                 "Использовать различные способы поиска, для ускорения процесса"
         ));
-        Subtask subtask1 = manager.setSubTask(new Subtask(
+        Subtask subtask1 = manager.setSubtask(new Subtask(
                 null,
                 "Поиск на сайтах знакомств",
                 null,
                 null,
                 epic1.getId()
         ));
-        Subtask subtask2 = manager.setSubTask(new Subtask(
+        Subtask subtask2 = manager.setSubtask(new Subtask(
                 null,
                 "Поиск через знакомых",
                 null,
                 null,
                 epic1.getId()
                 ));
-        Subtask subtask3 = manager.setSubTask(new Subtask(
+        Subtask subtask3 = manager.setSubtask(new Subtask(
                 null,
                 "Поиск в литературном клубе",
                 null,
@@ -79,7 +84,7 @@ public class Main {
                 "Оптимизировать поиск девушки",
                 "Получить результат быстрее и с меньшими затратами"
                 ));
-        Subtask subtask4 = manager.setSubTask(new Subtask(
+        Subtask subtask4 = manager.setSubtask(new Subtask(
                 null,
                 "Выбрать наиболее оптимальный способ поиска",
                 null,
@@ -92,21 +97,21 @@ public class Main {
                 "Создать систему оценки способов поиска",
                 "Без статистики не обойтись"
                 ));
-        Subtask subtask5 = manager.setSubTask(new Subtask(
+        Subtask subtask5 = manager.setSubtask(new Subtask(
                 null,
                 "Задать параметры системы оценки",
                 "Возможно бальная система",
                 null,
                 epic3.getId()
                 ));
-        Subtask subtask6 = manager.setSubTask(new Subtask(
+        Subtask subtask6 = manager.setSubtask(new Subtask(
                 null,
                 "Собрать статистику способов",
                 null,
                 null,
                 epic3.getId()
         ));
-        Subtask subtask7 = manager.setSubTask(new Subtask(
+        Subtask subtask7 = manager.setSubtask(new Subtask(
                 null,
                 "Провести статистическое исследование",
                 null,
@@ -126,6 +131,7 @@ public class Main {
             System.out.println(stringBuilder);
             i++;
         }
+        System.out.println("\n" + "-".repeat(20) + "\n");
     }
 
     /// Вывести все данные

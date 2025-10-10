@@ -17,7 +17,7 @@ public class Managers {
         }
     }
 
-    public static <T> HistoryManager<T> getHistoryManager() {
-        return new InMemoryHistoryManager<>();
+    public static HistoryManager getHistoryManager() {
+        return new InMemoryHistoryManager();
     }
 }
