@@ -3,10 +3,8 @@ import manager.Managers;
 import manager.TaskManager;
 import manager.TaskManagerType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.TreeSet;
 
 public class Main {
 
@@ -30,9 +28,6 @@ public class Main {
         testTasks();
 
         printHistory();
-//        int i = 1;
-//        start();
-
     }
 
     /// Ввести исходные данные
@@ -587,8 +582,6 @@ public class Main {
             System.out.println("\n" + "-".repeat(20) + "\n");
             break;
         }
-        return;
-
     }
 
     static void addSub() {
@@ -623,5 +616,4 @@ public class Main {
             return;
         }
     }
-
 }
