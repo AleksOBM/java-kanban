@@ -4,18 +4,22 @@ import data.Epic;
 import data.Status;
 import data.Subtask;
 import data.Task;
-
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class TaskManagerTest {
-
+public class FileBackedTaskManagerTest {
     static TaskManager manager;
+    static TaskManager manager2;
 
     static Task task;
     static int taskId;
@@ -28,6 +32,7 @@ public class TaskManagerTest {
     static List<Epic> epics;
 
     static List<Subtask> subtasks;
+    static File file;
 
     void updateTaskHistory(List<Task> history) {
         manager.getTask(taskId);
@@ -35,10 +40,18 @@ public class TaskManagerTest {
         history.addAll(manager.getHistory());
     }
 
+    @AfterEach
+    void afterEach() {
+        file.deleteOnExit();
+    }
+
     @BeforeEach
-    void beforeEach() {
+    void beforeEach() throws IOException {
+        // Создать новый темп-файл
+        file = File.createTempFile(".test", ".tmp", null);
+
         // Создать новый менеджер задач
-        manager = Managers.getTaskManager(TaskManagerType.IN_MEMORY);
+        manager = new FileBackedTaskManager(file);
 
         // Создать новую задачу
         task = new Task(
@@ -48,7 +61,6 @@ public class TaskManagerTest {
         );
 
         // Добавить задачу в базу и получить идентификатор добавленной задачи
-        assertNotNull(manager);
         taskId = manager.setTask(task).getId();
 
         // Получить задачу из базы по идентификатору
@@ -107,6 +119,8 @@ public class TaskManagerTest {
 
     }
 
+
+
     @Test
     void shouldBeNotNullAfterGet() {
         assertNotNull(savedTask, "Задача не найдена.");
@@ -140,7 +154,7 @@ public class TaskManagerTest {
 
     @Test
     void shouldBeEqualsCreatedTaskAndTaskOfHistoryList() {
-        List<Task> history = new ArrayList<>(manager.getHistory());
+        ArrayList<Task> history = new ArrayList<>(manager.getHistory());
         assertEquals(task, history.getFirst(), "Созданная задача не соответствует задаче из истории");
     }
 
@@ -281,7 +295,7 @@ public class TaskManagerTest {
 
     @Test
     void shouldReturnNullWhenTryingToGetAllSubtasks() {
-        assertNull( manager.getAllSubTasksByEpic(100),
+        assertNull(manager.getAllSubTasksByEpic(100),
                 "Менеджер не возвращает null при попытке получения всех подзадач несуществующего эпика");
     }
 
@@ -337,7 +351,7 @@ public class TaskManagerTest {
         manager.removeAllTasks();
         assertEquals(2, manager.getHistory().getFirst().getId(),
                 "При удалении всех задач они не удаляются из истории"
-                );
+        );
     }
 
     @Test
@@ -365,5 +379,20 @@ public class TaskManagerTest {
         assertEquals(3, manager.getHistory().size(),
                 "При удалении всех подзадач эпика они не удаляются из истории"
         );
+    }
+
+    @Test
+    void shouldReturnFourWhenGetAllTaskCountFromFile() {
+        manager2 = new FileBackedTaskManager(file);
+        assertEquals(4, manager2.getAll().size(),
+                "Менеджер загрузил не верное количество задач из файла");
+    }
+
+    @Test
+    void shouldReturnValidSubtaskAfterReloadFileWhereOneElementHasRemoved() {
+        manager.removeTask(1);
+        manager2 = new FileBackedTaskManager(file);
+        assertEquals("This is first Subtask", manager2.get(3).getTitle(),
+                "Менеджер неправильно загрузил подзадачи из файла");
     }
 }

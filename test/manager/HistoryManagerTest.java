@@ -14,7 +14,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class HistoryManagerTest<T> {
+public class HistoryManagerTest {
 
     static HistoryManager historyManager;
     static List<Task> history;

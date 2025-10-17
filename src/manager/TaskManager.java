@@ -3,6 +3,7 @@ package manager;
 import data.Epic;
 import data.Subtask;
 import data.Task;
+import data.Type;
 
 import java.util.List;
 
@@ -49,4 +50,12 @@ public interface TaskManager {
     void removeAllSubTasks();
 
     List<? extends Task> getHistory();
+
+    List<? extends Task> getAll();
+
+    Task get(int id);
+
+    Task getWithoutHistory(int id);
+
+    Type getType(int id);
 }

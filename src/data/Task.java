@@ -2,7 +2,7 @@ package data;
 
 import java.util.Objects;
 
-public class Task {
+public class Task implements Comparable<Task> {
 
     /// ID задачи
     protected Integer id;
@@ -69,6 +69,16 @@ public class Task {
     /// Внесение статуса задачи
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    /// Получение типа объекта
+    public Type getType() {
+        return Type.TASK;
+    }
+
+    @Override
+    public int compareTo(Task task) {
+        return Integer.compare(this.id, task.id);
     }
 
     @Override
