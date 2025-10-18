@@ -76,6 +76,11 @@ public class Task implements Comparable<Task> {
         return Type.TASK;
     }
 
+    /// Получение копии объекта
+    public Task getCopy() {
+        return new Task(this.id, this.title, this.description, this.status);
+    }
+
     @Override
     public int compareTo(Task task) {
         return Integer.compare(this.id, task.id);

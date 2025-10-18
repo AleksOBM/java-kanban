@@ -19,6 +19,8 @@ public class Main {
 
         testSubtasks();
 
+        printListAll();
+
         printHistory();
 
         testEpics();
@@ -28,6 +30,8 @@ public class Main {
         testTasks();
 
         printHistory();
+
+        start();
     }
 
     /// Ввести исходные данные

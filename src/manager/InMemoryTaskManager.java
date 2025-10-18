@@ -50,6 +50,7 @@ class InMemoryTaskManager implements TaskManager {
         }
     }
 
+    @Override
     public Task getWithoutHistory(int id) {
         if (idToTask.containsKey(id)) {
             return copyOfTask(id);
@@ -97,7 +98,7 @@ class InMemoryTaskManager implements TaskManager {
     @Override
     public Task setTask(Task newTask) {
         newTask.setId(generateNewId());
-        Task savedTask = new Task(newTask.getId(), newTask.getTitle(), newTask.getDescription(), newTask.getStatus());
+        Task savedTask = newTask.getCopy();
         idToTask.put(savedTask.getId(), savedTask);
 
         return newTask;
@@ -130,13 +131,7 @@ class InMemoryTaskManager implements TaskManager {
         Integer subtaskId = generateNewId();
         newSubtask.setId(subtaskId);
 
-        Subtask savedTask = new Subtask(
-                newSubtask.getId(),
-                newSubtask.getTitle(),
-                newSubtask.getDescription(),
-                newSubtask.getStatus(),
-                newSubtask.getEpicId()
-        );
+        Subtask savedTask = newSubtask.getCopy();
 
         Epic epic = idToEpic.get(epicId);
         epic.addSubtaskId(subtaskId);
@@ -186,12 +181,7 @@ class InMemoryTaskManager implements TaskManager {
             return null;
         }
         Task task = idToTask.get(taskId);
-        return new Task(
-                task.getId(),
-                task.getTitle(),
-                task.getDescription(),
-                task.getStatus()
-        );
+        return task.getCopy();
     }
 
     /// Получение копии эпика по ID
@@ -200,12 +190,7 @@ class InMemoryTaskManager implements TaskManager {
             return null;
         }
         Epic epic = idToEpic.get(epicId);
-        Epic newEpic = new Epic(
-                epic.getId(),
-                epic.getTitle(),
-                epic.getDescription()
-        );
-        newEpic.setStatus(epic.getStatus());
+        Epic newEpic = epic.getCopy();
         for (int subtaskId : epic.getSubtaskIds()) {
             newEpic.addSubtaskId(subtaskId);
         }
@@ -218,13 +203,7 @@ class InMemoryTaskManager implements TaskManager {
             return null;
         }
         Subtask subtask = idToSubtask.get(subtaskId);
-        return new Subtask(
-                subtask.getId(),
-                subtask.getTitle(),
-                subtask.getDescription(),
-                subtask.getStatus(),
-                subtask.getEpicId()
-        );
+        return subtask.getCopy();
     }
 
     /// Получение списка всех задач в виде объекта

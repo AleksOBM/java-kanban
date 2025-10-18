@@ -22,6 +22,12 @@ public class Subtask extends Task {
     }
 
     @Override
+    /// Получение копии объекта
+    public Subtask getCopy() {
+        return new Subtask(this.id, this.title, this.description, this.status, this.epicId);
+    }
+
+    @Override
     public String toString() {
         return "Subtask{" +
                 "id='" + super.getId() + '\'' +

@@ -12,39 +12,55 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
 
     private final File file;
     private final Charset charset = StandardCharsets.UTF_8;
+    private static final String firstRow = "id,type,name,status,description,epic";
     private final String delimiter = ",";
     private final String quote = "\"";
+    private static FileWriter writer;
+    private static FileReader reader;
+    private static BufferedReader bufferedReader;
+    private static BufferedWriter bufferedWriter;
+    private static int rowNumber = 1;
 
     FileBackedTaskManager(File file) {
         this.file = file;
-        loadFromFile(file);
+        loadFromFile(this.file);
     }
 
     private void loadFromFile(File file) {
-
-        if (!file.exists()) {
+        // Если файла нет - создаем
+        if (!this.file.exists()) {
             File dir = new File(file.getParent());
             try {
                 dir.mkdir();
                 file.createNewFile();
-                try (FileWriter writer = new FileWriter(file)) {
-                    writer.append("id,type,name,status,description,epic\n");
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
-                }
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
         }
+        try {
+            reader = new FileReader(this.file, charset);
+            bufferedReader = new BufferedReader(reader);
 
-        try (
-                FileReader reader = new FileReader(file.getPath(), charset);
-                BufferedReader br = new BufferedReader(reader)
-        ) {
-            br.readLine();
+            // Проверяем первую строчку
+            String testFirstRow = bufferedReader.readLine();
+            if (testFirstRow == null) {
+                resetFile();
+                bufferedReader.readLine();
+            } else if (!testFirstRow.equals(firstRow)) {
+                resetFile();
+            }
 
-            while (br.ready()) {
-                Task taskObject = getTaskObjectFromString(br.readLine());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+        try {
+            if (!bufferedReader.ready()) {
+                return;
+            }
+
+            while (bufferedReader.ready()) {
+                Task taskObject = getTaskObjectFromString(bufferedReader.readLine());
                 if (taskObject == null) {
                     return;
                 }
@@ -61,6 +77,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                     super.setTask(taskObject);
                 }
             }
+
         } catch (IOException e) {
             try {
                 throw new ManagerSaveException("Файл не прочитан");
@@ -68,16 +85,47 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 System.out.println(ex.getMessage());
             }
         }
+
         save();
     }
 
-    private void save() {
-        try (FileWriter writer = new FileWriter(file)) {
-            writer.write("id,type,name,status,description,epic\n");
+    private void resetFile() {
+        try {
+            writer = new FileWriter(this.file, charset);
+            bufferedWriter = new BufferedWriter(writer);
+            bufferedWriter.append(firstRow);
+            bufferedWriter.flush();
+            bufferedWriter.newLine();
+            rowNumber++;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-            for (Task taskObject : getAll()) {
-                writer.append(getStringToFileSave(taskObject)).append("\n");
+    private void save() {
+        List<Task> all = getAll();
+        if (all.isEmpty()) {
+            return;
+        }
+
+        try {
+            if (writer == null) {
+                resetFile();
             }
+
+            if ((rowNumber - 2) > all.size()) {
+                resetFile();
+                rowNumber = 2;
+            }
+
+            for (int i = rowNumber - 2; i < all.size(); i++) {
+                Task taskObject = all.get(i);
+                bufferedWriter.append(getStringToFileSave(taskObject));
+                bufferedWriter.flush();
+                bufferedWriter.newLine();
+                rowNumber++;
+            }
+
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
