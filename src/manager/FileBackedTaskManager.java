@@ -66,7 +66,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 }
 
                 if (counter < taskObject.getId()) {
-                    counter++;
+                    counter = taskObject.getId();
                 }
 
                 if (taskObject instanceof Epic) {
