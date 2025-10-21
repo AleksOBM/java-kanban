@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +50,7 @@ public class FileBackedTaskManagerTest {
     @BeforeEach
     void beforeEach() throws IOException {
         // Создать новый темп-файл
-        file = File.createTempFile(".test", ".tmp", null);
+        file = File.createTempFile(".test", ".csv", null);
 
         // Создать новый менеджер задач
         manager = new FileBackedTaskManager(file);
@@ -389,10 +391,42 @@ public class FileBackedTaskManagerTest {
     }
 
     @Test
+    void shouldReturnActualStatusesAfterUpdateDataFromFile() {
+        manager.removeTask(1);
+        manager.setTask(new Task(null, "LastTask", "eee", Status.NEW));
+        manager2 = new FileBackedTaskManager(file);
+        StringBuilder statuses = new StringBuilder();
+        for (Task taskObject : manager2.getAll()) {
+            statuses.append(taskObject.getStatus()).append(",");
+        }
+        statuses.deleteCharAt(statuses.length() - 1);
+
+        assertEquals("IN_PROGRESS,IN_PROGRESS,DONE,NEW", statuses.toString(),
+                "Менеджер неправильно загружает статусы из файла"
+        );
+    }
+
+    @Test
+    void shouldReturnNullWhenGetFakeTaskAfterThisAdding() {
+        // Фэйковая задача
+        Task subtask = new Subtask(null, "last subtask", null, null, 2);
+        manager.setTask(subtask);
+        assertNull(manager.get(5), "Менеджер сохранил фэйковую задачу.");
+    }
+
+    @Test
     void shouldReturnValidSubtaskAfterReloadFileWhereOneElementHasRemoved() {
         manager.removeTask(1);
+
         manager2 = new FileBackedTaskManager(file);
-        assertEquals("This is first Subtask", manager2.get(3).getTitle(),
-                "Менеджер неправильно загрузил подзадачи из файла");
+        manager2.removeSubtask(4);
+        manager2.setEpic((Epic) manager.get(2).getCopy());
+
+        manager.setTask(new Task(1,"1","1",null));
+
+        FileBackedTaskManager manager3 = new FileBackedTaskManager(file);
+        String title = manager3.getTask(6).getTitle();
+        assertEquals("1", title,
+                "Менеджер не отслеживает изменения произведенные в файле извне.");
     }
 }

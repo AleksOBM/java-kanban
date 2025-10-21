@@ -1,8 +1,11 @@
 import data.*;
+import exception.ManagerSaveException;
+import manager.FileBackedTaskManager;
 import manager.Managers;
 import manager.TaskManager;
 import manager.TaskManagerType;
 
+import java.io.File;
 import java.util.List;
 import java.util.Scanner;
 
@@ -10,26 +13,33 @@ public class Main {
 
     static TaskManager manager = Managers.getTaskManager(TaskManagerType.FILE_BACKED);
     static Scanner scanner = new Scanner(System.in);
+    static final int ms = 1500;
 
     public static void main(String[] args) {
 
-        insertStartData();
-
-        printListAll();
-
-        testSubtasks();
-
-        printListAll();
-
-        printHistory();
-
-        testEpics();
-
-        printHistory();
-
-        testTasks();
-
-        printHistory();
+//        insertStartData();
+//
+//        waitSecond(ms);
+//
+//        printListAll();
+//
+//        testSubtasks();
+//
+//        waitSecond(ms);
+//
+//        printListAll();
+//
+//        printHistory();
+//
+//        testEpics();
+//
+//        waitSecond();
+//
+//        printHistory();
+//
+//        testTasks();
+//
+//        printHistory();
 
         start();
     }
@@ -41,23 +51,29 @@ public class Main {
                 "Познакомиться с девушкой",
                 "Она должна понравиться моей маме"
         ));
+        waitSecond(ms);
 
         Task task2 = manager.setTask(new Task(
                 null,
                 "Сводить девушку на свидание",
                 "По правилам этикета нужно заплатить за нее в ресторане"
         ));
+        waitSecond(ms);
+
         Task task3 = manager.setTask(new Task(
                 null,
                 "Подарить девушке цветы",
                 "Не дарить хризантемы"
         ));
+        waitSecond(ms);
 
         Epic epic1 = manager.setEpic(new Epic(
                 null,
                 "Найти девушку для знакомства",
                 "Использовать различные способы поиска, для ускорения процесса"
         ));
+        waitSecond(ms);
+
         Subtask subtask1 = manager.setSubtask(new Subtask(
                 null,
                 "Поиск на сайтах знакомств",
@@ -65,6 +81,8 @@ public class Main {
                 null,
                 epic1.getId()
         ));
+        waitSecond(ms);
+
         Subtask subtask2 = manager.setSubtask(new Subtask(
                 null,
                 "Поиск через знакомых",
@@ -72,6 +90,8 @@ public class Main {
                 null,
                 epic1.getId()
         ));
+        waitSecond(ms);
+
         Subtask subtask3 = manager.setSubtask(new Subtask(
                 null,
                 "Поиск в литературном клубе",
@@ -79,12 +99,15 @@ public class Main {
                 null,
                 epic1.getId()
         ));
+        waitSecond(ms);
 
         Epic epic2 = manager.setEpic(new Epic(
                 null,
                 "Оптимизировать поиск девушки",
                 "Получить результат быстрее и с меньшими затратами"
         ));
+        waitSecond(ms);
+
         Subtask subtask4 = manager.setSubtask(new Subtask(
                 null,
                 "Выбрать наиболее оптимальный способ поиска",
@@ -92,12 +115,15 @@ public class Main {
                 null,
                 epic2.getId()
         ));
+        waitSecond(ms);
 
         Epic epic3 = manager.setEpic(new Epic(
                 null,
                 "Создать систему оценки способов поиска",
                 "Без статистики не обойтись"
         ));
+        waitSecond(ms);
+
         Subtask subtask5 = manager.setSubtask(new Subtask(
                 null,
                 "Задать параметры системы оценки",
@@ -105,6 +131,8 @@ public class Main {
                 null,
                 epic3.getId()
         ));
+        waitSecond(ms);
+
         Subtask subtask6 = manager.setSubtask(new Subtask(
                 null,
                 "Собрать статистику способов",
@@ -112,6 +140,8 @@ public class Main {
                 null,
                 epic3.getId()
         ));
+        waitSecond(ms);
+
         Subtask subtask7 = manager.setSubtask(new Subtask(
                 null,
                 "Провести статистическое исследование",
@@ -154,10 +184,12 @@ public class Main {
                 Status.IN_PROGRESS
         )));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Удаление задачи по идентификатору:" + "\n");
         System.out.println(removeTask(2));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Получение списка всех задач:" + "\n");
         System.out.println(getAllTasksList());
@@ -183,6 +215,7 @@ public class Main {
                 null
         )));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Изменение статуса подзадачи:" + "\n");
         System.out.println(manager.updateSubtask(new Subtask(
@@ -193,10 +226,12 @@ public class Main {
                 null
         )));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Удаление подзадачи по идентификатору:" + "\n");
         System.out.println(removeSubtask(6));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Получение списка всех подзадач:" + "\n");
         System.out.println(getAllSubtasksList());
@@ -220,10 +255,12 @@ public class Main {
                 ""
         )));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Удаление эпика по идентификатору:" + "\n");
         System.out.println(removeEpic(8));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Получение эпика со списком подзадач:" + "\n");
         System.out.println(getEpicWithSubtasksList(10));
@@ -412,6 +449,7 @@ public class Main {
 
     static void printHelp() {
         System.out.println("\n" + "-".repeat(20) + "\n");
+        System.out.println("Обновить данные --> update");
         System.out.println("Поиск по id --> find");
         System.out.println("Вывести весь список --> print-all");
         System.out.println("Добавить задачу --> add-task");
@@ -438,6 +476,16 @@ public class Main {
                     return;
                 case "help":
                     printHelp();
+                    break;
+                case "update":
+                    FileBackedTaskManager manager1 = FileBackedTaskManager
+                            .getInstance(new File("src/autosave/data.csv"));
+                    try {
+                        manager1.updateDataFromFile();
+                    } catch (ManagerSaveException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("Данные загружены.");
                     break;
                 case "print-all":
                     printListAll();
@@ -601,12 +649,12 @@ public class Main {
                 System.out.println("\n" + "-".repeat(20) + "\n");
                 return;
             }
-            try  {
-                manager.getEpic(epiccId);
-            } catch (NullPointerException e) {
+
+            if (manager.getEpic(epiccId) == null) {
                 System.out.println("Такого id эпика нет");
                 continue;
             }
+
             System.out.println("\n" + "-".repeat(20) + "\n");
             System.out.print("Заголовок (без пробелов) --> ");
             String subtaskTitle = scanner.next();
@@ -618,6 +666,15 @@ public class Main {
             System.out.println(newSub);
             System.out.println("\n" + "-".repeat(20) + "\n");
             return;
+        }
+    }
+
+    static void waitSecond(int ms) {
+        try {
+            Thread.sleep(ms); // Пауза на 1000 миллисекунд (1 секунду)
+        } catch (InterruptedException e) {
+            // Обработка исключения, которое может возникнуть, если поток будет прерван
+            e.printStackTrace();
         }
     }
 }

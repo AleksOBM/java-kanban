@@ -97,6 +97,14 @@ class InMemoryTaskManager implements TaskManager {
     /// Внесение задачи в хранилище по объекту
     @Override
     public Task setTask(Task newTask) {
+        if (newTask.getType() != Type.TASK) {
+            try {
+                throw new ManagerSaveException("Ошибка добавления новой задачи - неверные входные данные.");
+            } catch (ManagerSaveException e) {
+                System.out.println(e.getMessage());
+                return null;
+            }
+        }
         newTask.setId(generateNewId());
         Task savedTask = newTask.getCopy();
         idToTask.put(savedTask.getId(), savedTask);
@@ -107,6 +115,13 @@ class InMemoryTaskManager implements TaskManager {
     /// Внесение эпика в хранилище по объекту
     @Override
     public Epic setEpic(Epic newEpic) {
+        if (newEpic.getType() != Type.EPIC) {
+            try {
+                throw new ManagerSaveException("Ошибка добавления новой задачи - неверные входные данные.");
+            } catch (ManagerSaveException e) {
+                System.out.println(e.getMessage());
+            }
+        }
         newEpic.setId(generateNewId());
         newEpic.setStatus(Status.NEW);
         Epic savedEpic = new Epic(newEpic.getId(), newEpic.getTitle(), newEpic.getDescription());
@@ -120,9 +135,9 @@ class InMemoryTaskManager implements TaskManager {
     @Override
     public Subtask setSubtask(Subtask newSubtask) {
         Integer epicId = newSubtask.getEpicId();
-        if (epicId == null || idToEpic.get(epicId) == null) {
+        if (epicId == null || idToEpic.get(epicId) == null || newSubtask.getType() != Type.SUBTASK) {
             try {
-                throw new ManagerSaveException("Попытка добавить подзадачу в несуществующий эпик - не удалась.");
+                throw new ManagerSaveException("Ошибка добавления новой подзадачи - неверные входные данные.");
             } catch (ManagerSaveException e) {
                 System.out.println(e.getMessage());
             }

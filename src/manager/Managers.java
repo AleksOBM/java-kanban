@@ -10,7 +10,7 @@ public class Managers {
                 return new InMemoryTaskManager();
             }
             case FILE_BACKED -> {
-                return new FileBackedTaskManager(new File(
+                return FileBackedTaskManager.getInstance(new File(
                         "src/autosave/",
                         "data.csv"
                 ));
