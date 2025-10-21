@@ -16,10 +16,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private static FileBackedTaskManager instance;
 
     /// Параметры CSV файла
-    private static final String tableHeader = "id,type,name,status,description,epic";
-    private final Charset charset = StandardCharsets.UTF_8;
-    private final String delimiter = ",";
-    private final String quote = "\"";
+    private static final String TABLE_HEADER = "id,type,name,status,description,epic";
+    private static final Charset CHARSET = StandardCharsets.UTF_8;
+    private static final String DELIMITER = ",";
+    private static final String QUOTE = "\"";
 
     /// Текущая строка таблицы
     private int lineNumber = 0;
@@ -64,7 +64,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
 
         String header = fileToList.getFirst();
-        if (header == null || !header.equals(tableHeader)) {
+        if (header == null || !header.equals(TABLE_HEADER)) {
             resetFile();
             readFileToList();
         }
@@ -100,7 +100,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /// Очистить содержимое файла, добавить шапку таблицы
     private void resetFile() throws ManagerSaveException {
         fileToList.clear();
-        fileToList.add(tableHeader);
+        fileToList.add(TABLE_HEADER);
 
         try {
             Files.write(file.toPath(), fileToList);
@@ -121,7 +121,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         try {
             fileToList.clear();
-            fileToList.add(tableHeader);
+            fileToList.add(TABLE_HEADER);
             for (Task taskObject : all) {
                 fileToList.add(getStringToFileSave(taskObject));
             }
@@ -137,7 +137,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /// Прочитать содержимое файла в буфер
     private void readFileToList() throws ManagerSaveException {
         try {
-            fileToList = Files.readAllLines(file.toPath(), charset);
+            fileToList = Files.readAllLines(file.toPath(), CHARSET);
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка чтения из файла");
         }
@@ -151,7 +151,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         List<String> readedList;
         try {
-            readedList = Files.readAllLines(file.toPath(), charset);
+            readedList = Files.readAllLines(file.toPath(), CHARSET);
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка чтения из файла");
         }
@@ -174,23 +174,23 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         Integer id = taskObject.getId();
         Type type = getType(id);
 
-        String title = taskObject.getTitle() != null && taskObject.getTitle().contains(delimiter)
-                ? quote + taskObject.getTitle() + quote
+        String title = taskObject.getTitle() != null && taskObject.getTitle().contains(DELIMITER)
+                ? QUOTE + taskObject.getTitle() + QUOTE
                 : taskObject.getTitle();
 
-        String description = taskObject.getDescription() != null && taskObject.getDescription().contains(delimiter)
-                ? quote + taskObject.getDescription() + quote
+        String description = taskObject.getDescription() != null && taskObject.getDescription().contains(DELIMITER)
+                ? QUOTE + taskObject.getDescription() + QUOTE
                 : taskObject.getDescription();
 
         String status = taskObject.getStatus() != null ? taskObject.getStatus().toString() : "null";
 
         String epic = type.equals(Type.SUBTASK) ? String.valueOf(((Subtask) taskObject).getEpicId()) : "";
 
-        return id + delimiter +
-                type + delimiter +
-                title + delimiter +
-                status + delimiter +
-                description + delimiter +
+        return id + DELIMITER +
+                type + DELIMITER +
+                title + DELIMITER +
+                status + DELIMITER +
+                description + DELIMITER +
                 epic;
     }
 
@@ -201,15 +201,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 throw new ManagerSaveException("Невозможно создать задачу из пустой строки");
             }
 
-            String[] splitStr = stringFromFile.split(delimiter + "(?!\\s)");
+            String[] splitStr = stringFromFile.split(DELIMITER + "(?!\\s)");
             if (splitStr.length < 5) {
                 throw new ManagerSaveException("Не поддерживаемый формат строки");
             }
 
             Integer id = Integer.parseInt(splitStr[0]);
             Type type = Type.valueOf(splitStr[1]);
-            String title = splitStr[2].replace(quote, "");
-            String description = splitStr[4].replace(quote, "");
+            String title = splitStr[2].replace(QUOTE, "");
+            String description = splitStr[4].replace(QUOTE, "");
             Status status = !splitStr[3].equals("null") ? Status.valueOf(splitStr[3]) : null;
 
             switch (type) {
