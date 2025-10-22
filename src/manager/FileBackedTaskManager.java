@@ -21,8 +21,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private static final String DELIMITER = ",";
     private static final String QUOTE = "\"";
 
-    /// Текущая строка таблицы
-    private int lineNumber = 0;
+    /// Максимальный id
+    private int maxId = 0;
 
     /// Буфер чтения
     private List<String> fileToList;
@@ -53,7 +53,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             } catch (IOException e) {
                 throw new ManagerSaveException("Ошибка создания файла");
             }
-            System.out.println("Создан новый файл: " + file.getPath());
+            System.out.println("Создан новый файл: " + newFile.getPath());
         }
         file = newFile;
 
@@ -74,27 +74,56 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public void updateDataFromFile() throws ManagerSaveException {
         super.removeAllTasks();
         super.removeAllEpics();
-        readFileToList();
 
-        lineNumber = 1;
-        while (lineNumber < fileToList.size()) {
-            Task taskObject = getDataObjectFromString(fileToList.get(lineNumber));
+        if (fileToList.size() > 1) {
+            setMaxId();
+        }
+
+        int rowNumber = 1;
+        while (rowNumber < fileToList.size()) {
+            Task taskObject = getDataObjectFromString(fileToList.get(rowNumber));
+
             if (taskObject == null) {
                 return;
             }
 
-            counter = taskObject.getId();
+            maxId = taskObject.getId();
 
-            if (taskObject instanceof Epic) {
-                super.setEpic((Epic) taskObject);
-            } else if (taskObject instanceof Subtask) {
-                super.setSubtask((Subtask) taskObject);
+            if (taskObject instanceof Epic epic) {
+                idToEpic.put(maxId, epic);
+            } else if (taskObject instanceof Subtask subtask) {
+                int epicId = subtask.getEpicId();
+                if (epicId == 0) {
+                    System.out.println("Подзадача c id = " + subtask.getId() + " не привязана к эпику. Epic id = 0.");
+                    rowNumber++;
+                    continue;
+                }
+                Epic thisEpic = idToEpic.get(epicId);
+                if (thisEpic == null) {
+                    System.out.println("У подзадачи c id = " + subtask.getId()
+                            + " отсутствует эпик c id = " + epicId + ".");
+                    rowNumber++;
+                    continue;
+                }
+                thisEpic.addSubtaskId(maxId);
+
+                idToSubtask.put(maxId, subtask);
+                updateEpicsStatus(thisEpic.getId());
             } else {
-                super.setTask(taskObject);
+                idToTask.put(maxId, taskObject);
             }
 
-            lineNumber++;
+            rowNumber++;
         }
+
+        if (maxId != 0) {
+            if (counter > maxId) {
+                maxId = counter;
+            } else {
+                counter = maxId + 1;
+            }
+        }
+
     }
 
     /// Очистить содержимое файла, добавить шапку таблицы
@@ -107,7 +136,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка сброса файла");
         }
-        lineNumber = 1;
     }
 
     /// Выгрузить все данные в файл
@@ -127,10 +155,16 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
 
             Files.write(file.toPath(), fileToList);
-            lineNumber = fileToList.size();
 
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка записи в файл");
+        }
+    }
+
+    private void setMaxId() {
+        Task lsatTaskObject = getDataObjectFromString(fileToList.getLast());
+        if (lsatTaskObject != null) {
+            maxId = lsatTaskObject.getId();
         }
     }
 
@@ -141,31 +175,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка чтения из файла");
         }
-    }
-
-    /// Перезагрузить данные из файла если файл был изменен извне
-    private void checkAndReloadFileData() throws ManagerSaveException {
-        if (fileToList == null) {
-            return;
-        }
-
-        List<String> readedList;
-        try {
-            readedList = Files.readAllLines(file.toPath(), CHARSET);
-        } catch (IOException e) {
-            throw new ManagerSaveException("Ошибка чтения из файла");
-        }
-
-        for (int i = 0; i < readedList.size(); i++) {
-            String str1 = readedList.get(i);
-            String str2 = fileToList.get(i);
-            if (!str1.equals(str2)) {
-                System.out.println("Файл был изменен извне.");
-                updateDataFromFile();
-                System.out.println("Новые данные загружены.");
-            }
-        }
-
     }
 
     /// Получить строку для записи в файл из объекта
@@ -220,7 +229,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     newEpic.setStatus(status);
                     return newEpic;
                 case SUBTASK:
-                    int epicId = Integer.parseInt(splitStr[5]);
+                    int epicId = 0;
+                    try {
+                        epicId = Integer.parseInt(splitStr[5]);
+                    } catch (IndexOutOfBoundsException e) {
+                        // epicId = 0
+                    }
                     return new Subtask(id, title, description, status, epicId);
                 default:
                     return null;
@@ -233,162 +247,91 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public Task setTask(Task newTask) {
-        Task result = null;
-        try {
-           checkAndReloadFileData();
-            result = super.setTask(newTask);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при добавлении задачи");
-        }
+        Task result = super.setTask(newTask);
+        save();
+        setMaxId();
         return result;
     }
 
     @Override
     public Epic setEpic(Epic newEpic) {
-        Epic result = null;
-        try {
-            checkAndReloadFileData();
-            result = super.setEpic(newEpic);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при добавлении эпика");
-        }
+        Epic result = super.setEpic(newEpic);
+        save();
+        setMaxId();
         return result;
     }
 
     @Override
     public Subtask setSubtask(Subtask newSubtask) {
-        Subtask result = null;
-        try {
-            checkAndReloadFileData();
-            result = super.setSubtask(newSubtask);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при добавлении подзадачи");
-        }
+        Subtask result = super.setSubtask(newSubtask);
+        save();
+        setMaxId();
         return result;
     }
 
     @Override
     public Task updateTask(Task newTask) {
-        Task result = null;
-        try {
-            checkAndReloadFileData();
-            result = super.updateTask(newTask);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при изменении задачи");
-        }
+        Task result = super.updateTask(newTask);
+        save();
         return result;
     }
 
     @Override
     public Epic updateEpic(Epic newEpic) {
-        Epic result = null;
-        try {
-            checkAndReloadFileData();
-            result = super.updateEpic(newEpic);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при изменении эпика");
-        }
+        Epic result = super.updateEpic(newEpic);
+        save();
         return result;
     }
 
     @Override
     public Subtask updateSubtask(Subtask newSubtask) {
-        Subtask result = null;
-        try {
-            checkAndReloadFileData();
-            result = super.updateSubtask(newSubtask);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при изменении подзадачи");
-        }
+        Subtask result = super.updateSubtask(newSubtask);
+        save();
         return result;
     }
 
     @Override
     public boolean removeTask(int taskId) {
-        boolean result = false;
-        try {
-            checkAndReloadFileData();
-            result = super.removeTask(taskId);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при удалении задачи");
-        }
+        boolean result = super.removeTask(taskId);
+        save();
         return result;
     }
 
     @Override
     public boolean removeEpic(int epicId) {
-        boolean result = false;
-        try {
-           checkAndReloadFileData();
-            result = super.removeEpic(epicId);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при удалении эпика");
-        }
+        boolean result = super.removeEpic(epicId);
+        save();
         return result;
     }
 
     @Override
     public boolean removeSubtask(int subtaskId) {
-        boolean result = false;
-        try {
-            checkAndReloadFileData();
-            result = super.removeSubtask(subtaskId);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при удалении подзадачи");
-        }
+        boolean result = super.removeSubtask(subtaskId);
+        save();
         return result;
     }
 
     @Override
     public void removeAllSubtasksByEpic(int epicId) {
-        try {
-            checkAndReloadFileData();
-            super.removeAllSubtasksByEpic(epicId);
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при удалении всех подзадач эпика");
-        }
+        super.removeAllSubtasksByEpic(epicId);
+        save();
     }
 
     @Override
     public void removeAllTasks() {
-        try {
-            checkAndReloadFileData();
-            super.removeAllTasks();
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при удалении всех задач");
-        }
+        super.removeAllTasks();
+        save();
     }
 
     @Override
     public void removeAllEpics() {
-        try {
-            checkAndReloadFileData();
-            super.removeAllEpics();
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при удалении всех эпиков");
-        }
+        super.removeAllEpics();
+        save();
     }
 
     @Override
     public void removeAllSubTasks() {
-        try {
-            checkAndReloadFileData();
-            super.removeAllSubTasks();
-            save();
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage() + " при удалении всех подзадач");
-        }
+        super.removeAllSubTasks();
+        save();
     }
 }

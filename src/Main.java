@@ -33,7 +33,7 @@ public class Main {
 //
 //        testEpics();
 //
-//        waitSecond();
+//        waitSecond(ms);
 //
 //        printHistory();
 //

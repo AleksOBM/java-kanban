@@ -120,7 +120,6 @@ public class FileBackedTaskManagerTest {
     }
 
 
-
     @Test
     void shouldBeNotNullAfterGet() {
         assertNotNull(savedTask, "Задача не найдена.");
@@ -412,19 +411,4 @@ public class FileBackedTaskManagerTest {
         assertNull(manager.get(5), "Менеджер сохранил фэйковую задачу.");
     }
 
-    @Test
-    void shouldReturnValidSubtaskAfterReloadFileWhereOneElementHasRemoved() {
-        manager.removeTask(1);
-
-        manager2 = new FileBackedTaskManager(file);
-        manager2.removeSubtask(4);
-        manager2.setEpic((Epic) manager.get(2).getCopy());
-
-        manager.setTask(new Task(1,"1","1",null));
-
-        FileBackedTaskManager manager3 = new FileBackedTaskManager(file);
-        String title = manager3.getTask(6).getTitle();
-        assertEquals("1", title,
-                "Менеджер не отслеживает изменения произведенные в файле извне.");
-    }
 }

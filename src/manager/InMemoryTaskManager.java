@@ -1,23 +1,22 @@
 package manager;
 
 import data.*;
-import exception.ManagerSaveException;
 
 import java.util.*;
 
 class InMemoryTaskManager implements TaskManager {
 
     /// Хранилище задач
-    private final Map<Integer, Task> idToTask = new HashMap<>();
+    protected final Map<Integer, Task> idToTask = new HashMap<>();
 
     /// Хранилище эпиков
-    private final Map<Integer, Epic> idToEpic = new HashMap<>();
+    protected final Map<Integer, Epic> idToEpic = new HashMap<>();
 
     /// Хранилище подзадач
-    private final Map<Integer, Subtask> idToSubtask = new HashMap<>();
+    protected final Map<Integer, Subtask> idToSubtask = new HashMap<>();
 
     /// Менеджер истории просмотров
-    private final HistoryManager historyManager = Managers.getHistoryManager();
+    protected final HistoryManager historyManager = Managers.getHistoryManager();
 
     /// Счетчик ID
     protected int counter = 1;
@@ -42,12 +41,8 @@ class InMemoryTaskManager implements TaskManager {
             historyManager.add(newSubtask);
             return newSubtask;
         }
-        try {
-            throw new ManagerSaveException("Попытка получения несуществующей таски");
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
+        System.out.println("Попытка получения несуществующей таски");
+        return null;
     }
 
     @Override
@@ -59,12 +54,8 @@ class InMemoryTaskManager implements TaskManager {
         } else if (idToSubtask.containsKey(id)) {
             return copyOfSubtask(id);
         }
-        try {
-            throw new ManagerSaveException("Попытка получения несуществующей таски");
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
+        System.out.println("Попытка получения несуществующей таски");
+        return null;
     }
 
     @Override
@@ -98,12 +89,8 @@ class InMemoryTaskManager implements TaskManager {
     @Override
     public Task setTask(Task newTask) {
         if (newTask.getType() != Type.TASK) {
-            try {
-                throw new ManagerSaveException("Ошибка добавления новой задачи - неверные входные данные.");
-            } catch (ManagerSaveException e) {
-                System.out.println(e.getMessage());
-                return null;
-            }
+            System.out.println("Ошибка добавления новой задачи - неверные входные данные.");
+            return null;
         }
         newTask.setId(generateNewId());
         Task savedTask = newTask.getCopy();
@@ -116,11 +103,8 @@ class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic setEpic(Epic newEpic) {
         if (newEpic.getType() != Type.EPIC) {
-            try {
-                throw new ManagerSaveException("Ошибка добавления новой задачи - неверные входные данные.");
-            } catch (ManagerSaveException e) {
-                System.out.println(e.getMessage());
-            }
+            System.out.println("Ошибка добавления нового эпика - неверные входные данные.");
+            return null;
         }
         newEpic.setId(generateNewId());
         newEpic.setStatus(Status.NEW);
@@ -136,11 +120,8 @@ class InMemoryTaskManager implements TaskManager {
     public Subtask setSubtask(Subtask newSubtask) {
         Integer epicId = newSubtask.getEpicId();
         if (epicId == null || idToEpic.get(epicId) == null || newSubtask.getType() != Type.SUBTASK) {
-            try {
-                throw new ManagerSaveException("Ошибка добавления новой подзадачи - неверные входные данные.");
-            } catch (ManagerSaveException e) {
-                System.out.println(e.getMessage());
-            }
+            System.out.println("Ошибка добавления новой подзадачи - неверные входные данные.");
+            return null;
         }
 
         Integer subtaskId = generateNewId();
@@ -224,19 +205,25 @@ class InMemoryTaskManager implements TaskManager {
     /// Получение списка всех задач в виде объекта
     @Override
     public ArrayList<Task> getAllTasks() {
-        return new ArrayList<>(idToTask.values());
+        ArrayList<Task> allTasks = new ArrayList<>(idToTask.values());
+        allTasks.sort(Task::compareTo);
+        return allTasks;
     }
 
     /// Получение списка всех эпиков в виде объекта
     @Override
     public ArrayList<Epic> getAllEpics() {
-        return new ArrayList<>(idToEpic.values());
+        ArrayList<Epic> allEpics = new ArrayList<>(idToEpic.values());
+        allEpics.sort(Task::compareTo);
+        return allEpics;
     }
 
     /// Получение списка всех подзадач в виде объекта
     @Override
     public ArrayList<Subtask> getAllSubtasks() {
-        return new ArrayList<>(idToSubtask.values());
+        ArrayList<Subtask> allSubtasks = new ArrayList<>(idToSubtask.values());
+        allSubtasks.sort(Task::compareTo);
+        return allSubtasks;
     }
 
     /// Получение списка всех подзадач эпика в виде объекта
@@ -443,7 +430,7 @@ class InMemoryTaskManager implements TaskManager {
     }
 
     /// Обновление статуса эпика
-    private void updateEpicsStatus(int epicId) {
+    protected void updateEpicsStatus(int epicId) {
         Epic epic = idToEpic.get(epicId);
         if (epic.getStatus() == null) {
             return;
