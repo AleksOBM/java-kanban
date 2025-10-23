@@ -5,16 +5,14 @@ import data.Epic;
 import data.Subtask;
 import data.Status;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class HistoryManagerTest<T> {
+public class HistoryManagerTest {
 
     static HistoryManager historyManager;
     static List<Task> history;

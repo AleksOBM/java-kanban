@@ -34,6 +34,19 @@ public class Epic extends Task {
     }
 
     @Override
+    public Type getType() {
+        return Type.EPIC;
+    }
+
+    @Override
+    /// Получение копии объекта
+    public Epic getCopy() {
+        Epic newEpic = new Epic(this.id, this.title, this.description);
+        newEpic.setStatus(this.status);
+        return newEpic;
+    }
+
+    @Override
     public String toString() {
         return "Epic{" +
                 "id='" + super.getId() + '\'' +

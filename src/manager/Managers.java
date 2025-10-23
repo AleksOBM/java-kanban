@@ -1,5 +1,7 @@
 package manager;
 
+import java.io.File;
+
 public class Managers {
 
     public static TaskManager getTaskManager(TaskManagerType type) {
@@ -8,8 +10,10 @@ public class Managers {
                 return new InMemoryTaskManager();
             }
             case FILE_BACKED -> {
-                System.out.println("FILE_BACKED will be adding at next sprint");
-                return null;
+                return FileBackedTaskManager.getInstance(new File(
+                        "src/autosave/",
+                        "data.csv"
+                ));
             }
             default -> {
                 return null;

@@ -1,36 +1,47 @@
-import data.Epic;
-import data.Status;
-import data.Subtask;
-import data.Task;
+import data.*;
+import exception.ManagerSaveException;
+import manager.FileBackedTaskManager;
 import manager.Managers;
 import manager.TaskManager;
 import manager.TaskManagerType;
 
+import java.io.File;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
-    static TaskManager manager = Managers.getTaskManager(TaskManagerType.IN_MEMORY);
+    static TaskManager manager = Managers.getTaskManager(TaskManagerType.FILE_BACKED);
+    static Scanner scanner = new Scanner(System.in);
+    static final int ms = 1500;
 
     public static void main(String[] args) {
 
-        insertStartData();
+//        insertStartData();
+//
+//        waitSecond(ms);
+//
+//        printListAll();
+//
+//        testSubtasks();
+//
+//        waitSecond(ms);
+//
+//        printListAll();
+//
+//        printHistory();
+//
+//        testEpics();
+//
+//        waitSecond(ms);
+//
+//        printHistory();
+//
+//        testTasks();
+//
+//        printHistory();
 
-        printListAll();
-
-        testSubtasks();
-
-        printHistory();
-
-        testEpics();
-
-        printHistory();
-
-        testTasks();
-
-        printHistory();
-
-        printListAll();
+        start();
     }
 
     /// Ввести исходные данные
@@ -40,23 +51,29 @@ public class Main {
                 "Познакомиться с девушкой",
                 "Она должна понравиться моей маме"
         ));
+        waitSecond(ms);
 
         Task task2 = manager.setTask(new Task(
                 null,
                 "Сводить девушку на свидание",
                 "По правилам этикета нужно заплатить за нее в ресторане"
         ));
+        waitSecond(ms);
+
         Task task3 = manager.setTask(new Task(
-           null,
-           "Подарить девушке цветы",
-           "Не дарить хризантемы"
+                null,
+                "Подарить девушке цветы",
+                "Не дарить хризантемы"
         ));
+        waitSecond(ms);
 
         Epic epic1 = manager.setEpic(new Epic(
                 null,
                 "Найти девушку для знакомства",
                 "Использовать различные способы поиска, для ускорения процесса"
         ));
+        waitSecond(ms);
+
         Subtask subtask1 = manager.setSubtask(new Subtask(
                 null,
                 "Поиск на сайтах знакомств",
@@ -64,13 +81,17 @@ public class Main {
                 null,
                 epic1.getId()
         ));
+        waitSecond(ms);
+
         Subtask subtask2 = manager.setSubtask(new Subtask(
                 null,
                 "Поиск через знакомых",
                 null,
                 null,
                 epic1.getId()
-                ));
+        ));
+        waitSecond(ms);
+
         Subtask subtask3 = manager.setSubtask(new Subtask(
                 null,
                 "Поиск в литературном клубе",
@@ -78,32 +99,40 @@ public class Main {
                 null,
                 epic1.getId()
         ));
+        waitSecond(ms);
 
         Epic epic2 = manager.setEpic(new Epic(
                 null,
                 "Оптимизировать поиск девушки",
                 "Получить результат быстрее и с меньшими затратами"
-                ));
+        ));
+        waitSecond(ms);
+
         Subtask subtask4 = manager.setSubtask(new Subtask(
                 null,
                 "Выбрать наиболее оптимальный способ поиска",
                 null,
                 null,
                 epic2.getId()
-                ));
+        ));
+        waitSecond(ms);
 
         Epic epic3 = manager.setEpic(new Epic(
                 null,
                 "Создать систему оценки способов поиска",
                 "Без статистики не обойтись"
-                ));
+        ));
+        waitSecond(ms);
+
         Subtask subtask5 = manager.setSubtask(new Subtask(
                 null,
                 "Задать параметры системы оценки",
                 "Возможно бальная система",
                 null,
                 epic3.getId()
-                ));
+        ));
+        waitSecond(ms);
+
         Subtask subtask6 = manager.setSubtask(new Subtask(
                 null,
                 "Собрать статистику способов",
@@ -111,6 +140,8 @@ public class Main {
                 null,
                 epic3.getId()
         ));
+        waitSecond(ms);
+
         Subtask subtask7 = manager.setSubtask(new Subtask(
                 null,
                 "Провести статистическое исследование",
@@ -153,10 +184,12 @@ public class Main {
                 Status.IN_PROGRESS
         )));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Удаление задачи по идентификатору:" + "\n");
         System.out.println(removeTask(2));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Получение списка всех задач:" + "\n");
         System.out.println(getAllTasksList());
@@ -182,6 +215,7 @@ public class Main {
                 null
         )));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Изменение статуса подзадачи:" + "\n");
         System.out.println(manager.updateSubtask(new Subtask(
@@ -192,10 +226,12 @@ public class Main {
                 null
         )));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Удаление подзадачи по идентификатору:" + "\n");
         System.out.println(removeSubtask(6));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Получение списка всех подзадач:" + "\n");
         System.out.println(getAllSubtasksList());
@@ -219,10 +255,12 @@ public class Main {
                 ""
         )));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Удаление эпика по идентификатору:" + "\n");
         System.out.println(removeEpic(8));
         System.out.println("\n" + "-".repeat(20) + "\n");
+        waitSecond(ms);
 
         System.out.println("Получение эпика со списком подзадач:" + "\n");
         System.out.println(getEpicWithSubtasksList(10));
@@ -251,7 +289,7 @@ public class Main {
         list.append("Задачи:").append("\n").append(getAllTasksList()).append("\n");
         List<Epic> epics = manager.getAllEpics();
         int epicIndex = 1;
-        for (Epic epic: epics) {
+        for (Epic epic : epics) {
             list.append("\n").append("Эпик ").append(epicIndex).append(":\n");
             list.append(epic).append("\n");
             List<Subtask> subtasks = manager.getAllSubTasksByEpic(epic.getId());
@@ -392,7 +430,7 @@ public class Main {
     static StringBuilder getAllSubtasksList(int epicId) {
         Epic epic = manager.getEpic(epicId);
         if (epic == null) {
-            return  null;
+            return null;
         }
         StringBuilder subtaskList = new StringBuilder();
         List<Subtask> thisSubtasks = manager.getAllSubTasksByEpic(epic.getId());
@@ -409,4 +447,234 @@ public class Main {
         return subtaskList;
     }
 
+    static void printHelp() {
+        System.out.println("\n" + "-".repeat(20) + "\n");
+        System.out.println("Обновить данные --> update");
+        System.out.println("Поиск по id --> find");
+        System.out.println("Вывести весь список --> print-all");
+        System.out.println("Добавить задачу --> add-task");
+        System.out.println("Добавить эпик --> add-epic");
+        System.out.println("Добавить подзадачу --> add-sub");
+        System.out.println("Удалить --> remove");
+        System.out.println("Изменить статус (задача или подзадача) --> set-st");
+        System.out.println("Показать историю --> history");
+        System.out.println("Вывести инструкцию --> help");
+        System.out.println("Выход --> exit");
+        System.out.println("\n" + "-".repeat(20) + "\n");
+    }
+
+    static void start() {
+        System.out.println("\n" + "-".repeat(20) + "\n");
+
+        while (true) {
+            System.out.println("Введите команду или help");
+            System.out.print("--> ");
+
+            switch (scanner.next()) {
+                case "exit":
+                    System.out.println("\n" + "-".repeat(20));
+                    return;
+                case "help":
+                    printHelp();
+                    break;
+                case "update":
+                    FileBackedTaskManager manager1 = FileBackedTaskManager
+                            .getInstance(new File("src/autosave/data.csv"));
+                    try {
+                        manager1.updateDataFromFile();
+                    } catch (ManagerSaveException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("Данные загружены.");
+                    break;
+                case "print-all":
+                    printListAll();
+                    break;
+                case "history":
+                    System.out.println("\n" + "-".repeat(20) + "\n");
+                    printHistory();
+                    break;
+                case "find":
+                    System.out.println("\n" + "-".repeat(20) + "\n");
+                    System.out.print("id --> ");
+                    int foundedId = Integer.parseInt(scanner.next());
+                    Task findedTask = manager.get(foundedId);
+                    System.out.println("\n" + "-".repeat(20) + "\n");
+                    System.out.println(findedTask);
+                    System.out.println("\n" + "-".repeat(20) + "\n");
+                    break;
+                case "add-task":
+                    System.out.println("\n" + "-".repeat(20) + "\n");
+                    System.out.print("Заголовок (без пробелов) --> ");
+                    String taskTitle = scanner.next();
+                    System.out.print("Описание (без пробелов) --> ");
+                    String taskDescription = scanner.next();
+                    Task newTsk = new Task(null, taskTitle, taskDescription, null);
+                    manager.setTask(newTsk);
+                    System.out.println("Задача добавлена");
+                    System.out.println(newTsk);
+                    System.out.println("\n" + "-".repeat(20) + "\n");
+                    break;
+                case "add-epic":
+                    System.out.println("\n" + "-".repeat(20) + "\n");
+                    System.out.print("Заголовок (без пробелов) --> ");
+                    String epicTitle = scanner.next();
+                    System.out.print("Описание (без пробелов) --> ");
+                    String epicDescription = scanner.next();
+                    Epic newEp = new Epic(null, epicTitle, epicDescription);
+                    manager.setEpic(newEp);
+                    System.out.println("Эпик добавлен");
+                    System.out.println(newEp);
+                    System.out.println("\n" + "-".repeat(20) + "\n");
+                    break;
+                case "add-sub":
+                    addSub();
+                    break;
+                case "set-st":
+                    setST();
+                    break;
+                case "remove":
+                    Type rmType = null;
+                    while (true) {
+                        System.out.println("\n" + "-".repeat(20) + "\n");
+                        System.out.println("Назад --> 0");
+                        System.out.print("id --> ");
+                        int rmId = Integer.parseInt(scanner.next());
+                        if (rmId == 0) {
+                            System.out.println("\n" + "-".repeat(20) + "\n");
+                            break;
+                        }
+                        if (manager.getWithoutHistory(rmId) == null) {
+                            System.out.println("Такого id не существует");
+                            continue;
+                        }
+                        try {
+                            rmType = manager.getType(rmId);
+                        } catch (NullPointerException e) {
+                            System.out.println("Такого id не существует");
+                            continue;
+                        }
+                        switch (rmType) {
+                            case TASK -> System.out.println(removeTask(rmId));
+                            case EPIC -> System.out.println(removeEpic(rmId));
+                            case SUBTASK -> System.out.println(removeSubtask(rmId));
+                        }
+                        System.out.println("\n" + "-".repeat(20) + "\n");
+                        break;
+                    }
+                    break;
+                default:
+                    System.out.println("Такой команды нет");
+                    System.out.println("\n" + "-".repeat(20) + "\n");
+                    break;
+            }
+        }
+    }
+
+    static void setStatus(Task taskObject, Status status) {
+        Type type = manager.getType(taskObject.getId());
+        taskObject.setStatus(status);
+        switch (type) {
+            case TASK:
+                manager.updateTask(taskObject);
+                break;
+            case EPIC:
+                manager.updateEpic((Epic) taskObject);
+                break;
+            case SUBTASK:
+                manager.updateSubtask((Subtask) taskObject);
+                break;
+            default:
+                break;
+        }
+    }
+
+    static void setST() {
+        System.out.println("\n" + "-".repeat(20) + "\n");
+        System.out.print("id --> ");
+        int statusesId = Integer.parseInt(scanner.next());
+        Task statusesTask = manager.getWithoutHistory(statusesId);
+        if (statusesTask == null) {
+            System.out.println("id " + statusesId + " не существует");
+            System.out.println("\n" + "-".repeat(20) + "\n");
+            return;
+        }
+        if (manager.getType(statusesId) == Type.EPIC) {
+            System.out.println("Это id эпика - статус автоматический");
+            System.out.println("\n" + "-".repeat(20) + "\n");
+            return;
+        }
+        while (true) {
+            System.out.println("\n" + "-".repeat(20) + "\n");
+            System.out.println("NEW --> 1");
+            System.out.println("IN_PROGRESS --> 2");
+            System.out.println("DONE --> 3");
+            System.out.print("Новый статус № --> ");
+            String statusNumber = scanner.next();
+            switch (statusNumber) {
+                case "1":
+                    setStatus(statusesTask, Status.NEW);
+                    System.out.println("Статус --> " + Status.NEW);
+                    System.out.println(statusesTask);
+                    break;
+                case "2":
+                    setStatus(statusesTask, Status.IN_PROGRESS);
+                    System.out.println("Статус --> " + Status.IN_PROGRESS);
+                    System.out.println(statusesTask);
+                    break;
+                case "3":
+                    setStatus(statusesTask, Status.DONE);
+                    System.out.println("Статус --> " + Status.DONE);
+                    System.out.println(statusesTask);
+                    break;
+                default:
+                    System.out.println(statusNumber + " - Неверный номер");
+                    continue;
+            }
+            System.out.println("\n" + "-".repeat(20) + "\n");
+            break;
+        }
+    }
+
+    static void addSub() {
+        int epiccId;
+        while (true) {
+            System.out.println("\n" + "-".repeat(20) + "\n");
+            System.out.println("Эпики:");
+            System.out.println(getAllEpicsList());
+            System.out.println("Назад --> 0");
+            System.out.print("id эпика --> ");
+            epiccId = Integer.parseInt(scanner.next());
+            if (epiccId == 0) {
+                System.out.println("\n" + "-".repeat(20) + "\n");
+                return;
+            }
+
+            if (manager.getEpic(epiccId) == null) {
+                System.out.println("Такого id эпика нет");
+                continue;
+            }
+
+            System.out.println("\n" + "-".repeat(20) + "\n");
+            System.out.print("Заголовок (без пробелов) --> ");
+            String subtaskTitle = scanner.next();
+            System.out.print("Описание (без пробелов) --> ");
+            String subtaskDescription = scanner.next();
+            Subtask newSub = new Subtask(null, subtaskTitle, subtaskDescription, null, epiccId);
+            manager.setSubtask(newSub);
+            System.out.println("Подзадача добавлена");
+            System.out.println(newSub);
+            System.out.println("\n" + "-".repeat(20) + "\n");
+            return;
+        }
+    }
+
+    static void waitSecond(int ms) {
+        try {
+            Thread.sleep(ms); // Пауза на 1000 миллисекунд (1 секунду)
+        } catch (InterruptedException e) {
+            // Обработка исключения, которое может возникнуть, если поток будет прерван
+            e.printStackTrace();
+        }
+    }
 }
