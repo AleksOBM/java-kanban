@@ -56,7 +56,7 @@ class EpicTest {
         epic.removeAllSubtaskIds();
         assertEquals("[]", epic.getSubtaskIds().toString(),
                 "Эпик не удаляет все подзадачи одной командой."
-                );
+        );
     }
 
     @Test
@@ -64,7 +64,11 @@ class EpicTest {
         assertEquals("Epic{id='1', " +
                         "title='This is epic', " +
                         "description='This is description of epic', " +
-                        "status='null'}",
+                        "status='null'" +
+                        ", startTime='null'" +
+                        ", endTime='null'" +
+                        ", duration='0'" +
+                        '}',
                 epic.toString(),
                 "Эпик возвращает некорректную строку при вызове toString.");
     }

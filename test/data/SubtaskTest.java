@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SubtaskTest {
+class SubtaskTest {
 
     static Subtask subtask;
 
@@ -15,6 +15,8 @@ public class SubtaskTest {
                 1,
                 "this is Subtask",
                 "This is Subtask description",
+                null,
+                null,
                 null,
                 null
         );
@@ -28,6 +30,9 @@ public class SubtaskTest {
                         "title='this is Subtask', " +
                         "description='This is Subtask description', " +
                         "status='null'" +
+                        ", startTime='null'" +
+                        ", endTime='null'" +
+                        ", duration='0'" +
                         "}",
                 subtask.toString(),
                 "Подзадача возвращает некорректную строку при вызове toString.");

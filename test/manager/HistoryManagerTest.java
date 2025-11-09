@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class HistoryManagerTest {
+class HistoryManagerTest {
 
     static HistoryManager historyManager;
     static List<Task> history;
@@ -23,7 +23,15 @@ public class HistoryManagerTest {
         Task task = new Task(1, "Hello", "World", Status.DONE);
         historyManager.add(task);
         historyManager.add(new Epic(2, "Hello", "World"));
-        historyManager.add(new Subtask(3, "Hello", "World", Status.DONE, 2));
+        historyManager.add(new Subtask(
+                3,
+                "Hello",
+                "World",
+                Status.DONE,
+                2,
+                null,
+                null
+        ));
         historyManager.add(new Task(1, "Goodbye", "World", Status.IN_PROGRESS));
         history = historyManager.getHistory();
 
@@ -33,7 +41,7 @@ public class HistoryManagerTest {
     @Test
     void shouldReturnEmptyListWhenHistoryIsEmpty() {
         HistoryManager hm = new InMemoryHistoryManager();
-        hm.add(new Subtask(1, null, null, null, 2));
+        hm.add(new Subtask(1, null, null, null, 2, null, null));
         hm.remove(1);
         assertEquals("[]", hm.getHistory().toString(),
                 "Пустая история не выдает пустой лист");

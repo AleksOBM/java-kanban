@@ -1,5 +1,8 @@
 package data;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class Task implements Comparable<Task> {
@@ -16,6 +19,17 @@ public class Task implements Comparable<Task> {
     /// Статус задачи
     protected Status status;
 
+    /// Дата и время, когда предполагается приступить к выполнению задачи
+    protected LocalDateTime startTime;
+
+    /// Продолжительность задачи в минутах
+    protected Duration duration = Duration.ZERO;
+
+    /// Дата и время завершения задачи
+    protected LocalDateTime endTime;
+
+    protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
     /// Конструктор 1
     public Task(Integer id, String title, String description) {
         this.id = id;
@@ -29,6 +43,23 @@ public class Task implements Comparable<Task> {
         this.title = title;
         this.description = description;
         this.status = status;
+    }
+
+    /// Конструктор 3
+    public Task(
+            Integer id,
+            String title,
+            String description,
+            Status status,
+            LocalDateTime startTime,
+            Duration duration
+    ) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.startTime = startTime;
+        setDuration(duration);
     }
 
     /// Получение ID задачи
@@ -71,6 +102,38 @@ public class Task implements Comparable<Task> {
         this.status = status;
     }
 
+    /// Дата и время начала выполнения задачи
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    /// Внесение времени начала выполнения
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+        if (startTime != null) {
+            endTime = this.startTime.plus(this.duration);
+        }
+    }
+
+    /// Время выполнения задачи
+    public Duration getDuration() {
+        return duration;
+    }
+
+    /// Внесение продолжительности задачи
+    public void setDuration(Duration duration) {
+        if (duration != null) {
+            this.duration = duration;
+        }
+        if (startTime != null) {
+            endTime = startTime.plus(this.duration);
+        }
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
     /// Получение типа объекта
     public Type getType() {
         return Type.TASK;
@@ -78,7 +141,7 @@ public class Task implements Comparable<Task> {
 
     /// Получение копии объекта
     public Task getCopy() {
-        return new Task(this.id, this.title, this.description, this.status);
+        return new Task(this.id, this.title, this.description, this.status, this.startTime, this.duration);
     }
 
     @Override
@@ -104,7 +167,10 @@ public class Task implements Comparable<Task> {
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", status=" + status +
+                ", status='" + status + '\'' +
+                ", startTime='" + (startTime == null ? "null" : startTime.format(DATE_TIME_FORMATTER)) + '\'' +
+                ", endTime='" + (endTime == null ? "null" : endTime.format(DATE_TIME_FORMATTER)) + '\'' +
+                ", duration='" + (duration == null ? "null" : duration.toMinutes()) + '\'' +
                 '}';
     }
 }
