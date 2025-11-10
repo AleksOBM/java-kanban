@@ -67,7 +67,7 @@ class EpicTest {
                         "status='null'" +
                         ", startTime='null'" +
                         ", endTime='null'" +
-                        ", duration='0'" +
+                        ", duration='null'" +
                         '}',
                 epic.toString(),
                 "Эпик возвращает некорректную строку при вызове toString.");

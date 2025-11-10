@@ -19,7 +19,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private static FileBackedTaskManager instance;
 
     /// Параметры CSV файла
-    private static final String TABLE_HEADER = "start, end, duration, id,type,name,status,description,epic";
+    //                                          0   1    2     3         4        5    6      7     8
+    private static final String TABLE_HEADER = "id,type,name,status,description,start,end,duration,epic";
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final String DELIMITER = ",";
@@ -109,7 +110,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             return;
         }
 
+        prioritizedTasks.addAll(objectToList.stream()
+                .filter(task -> task.getType() != Type.EPIC)
+                .filter(task -> task.getStartTime() != null).toList()
+        );
+
         for (Task taskObject : objectToList) {
+
             switch (taskObject.getType()) {
                 case TASK -> idToTask.put(taskObject.getId(), taskObject);
                 case EPIC -> idToEpic.put(taskObject.getId(), (Epic) taskObject);
@@ -225,14 +232,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         String epicId = type.equals(Type.SUBTASK) ? String.valueOf(((Subtask) taskObject).getEpicId()) : "";
 
-        return startTime + DELIMITER +
-                endTime + DELIMITER +
-                duration + DELIMITER +
-                id + DELIMITER +
+        return id + DELIMITER +
                 type + DELIMITER +
                 title + DELIMITER +
                 status + DELIMITER +
                 description + DELIMITER +
+                startTime + DELIMITER +
+                endTime + DELIMITER +
+                duration + DELIMITER +
                 epicId;
     }
 
@@ -248,14 +255,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 throw new ManagerSaveException("Не поддерживаемый формат строки");
             }
 
-            LocalDateTime startTime = splitStr[0].equals("null") ? null :
-                    LocalDateTime.parse(splitStr[0], DATE_TIME_FORMATTER);
-            Duration duration = Duration.ofMinutes(Integer.parseInt(splitStr[2]));
-            Integer id = Integer.parseInt(splitStr[3]);
-            Type type = Type.valueOf(splitStr[4]);
-            String title = splitStr[5].replace(QUOTE, "");
-            String description = splitStr[7].replace(QUOTE, "");
-            Status status = !splitStr[6].equals("null") ? Status.valueOf(splitStr[6]) : null;
+            Integer id = Integer.parseInt(splitStr[0]);
+            Type type = Type.valueOf(splitStr[1]);
+            String title = splitStr[2].replace(QUOTE, "");
+            Status status = !splitStr[3].equals("null") ? Status.valueOf(splitStr[3]) : null;
+            String description = splitStr[4].replace(QUOTE, "");
+            LocalDateTime startTime = splitStr[5].equals("null") ? null :
+                    LocalDateTime.parse(splitStr[5], DATE_TIME_FORMATTER);
+            // endTime здесь не нужен - пропускаем.
+            Duration duration = Duration.ofMinutes(Integer.parseInt(splitStr[7]));
 
             switch (type) {
                 case TASK:

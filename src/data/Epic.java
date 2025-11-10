@@ -1,6 +1,5 @@
 package data;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +8,9 @@ public class Epic extends Task {
 
     /// Хранилище ID подзадач
     private ArrayList<Integer> subtaskIds = new ArrayList<>();
+
+    /// Дата и время завершения эпика
+    private LocalDateTime endTime;
 
     /// Конструктор
     public Epic(Integer id, String title, String description) {
@@ -20,29 +22,15 @@ public class Epic extends Task {
         return new ArrayList<>(subtaskIds);
     }
 
+    @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
     /// Добавление новой ID подзадачи
     public void addSubtaskId(Integer subtaskId) {
         subtaskIds.remove(subtaskId);
         subtaskIds.add(subtaskId);
-    }
-
-    /// Удаление всех ID подзадач
-    public void removeAllSubtaskIds() {
-        subtaskIds.clear();
-    }
-
-    /// Удаление ID подзадачи
-    public void removeSubtaskId(Integer subtaskId) {
-        subtaskIds.remove(subtaskId);
-    }
-
-    @Override
-    public void setDuration(Duration duration) {
-        this.duration = duration;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
     }
 
     @Override
@@ -60,6 +48,21 @@ public class Epic extends Task {
         newEpic.endTime = this.endTime;
         newEpic.subtaskIds = this.subtaskIds;
         return newEpic;
+    }
+
+    /// Внесение даты и времени завершения
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    /// Удаление всех ID подзадач
+    public void removeAllSubtaskIds() {
+        subtaskIds.clear();
+    }
+
+    /// Удаление ID подзадачи
+    public void removeSubtaskId(Integer subtaskId) {
+        subtaskIds.remove(subtaskId);
     }
 
     @Override

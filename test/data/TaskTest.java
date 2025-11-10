@@ -48,7 +48,7 @@ class TaskTest {
                         "status='DONE'" +
                         ", startTime='null'" +
                         ", endTime='null'" +
-                        ", duration='0'" +
+                        ", duration='null'" +
                         '}',
                 task3.toString(),
                 "Задача возвращает некорректную строку при вызове toString.");

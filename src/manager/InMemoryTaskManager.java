@@ -3,6 +3,7 @@ package manager;
 import data.*;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -101,6 +102,11 @@ class InMemoryTaskManager implements TaskManager {
             return null;
         }
         newTask.setId(generateNewId());
+
+        if (newTask.getDuration() == null) {
+            newTask.setDuration(Duration.ZERO);
+        }
+
         Task savedTask = newTask.getCopy();
         idToTask.put(savedTask.getId(), savedTask);
         if (savedTask.getStartTime() != null) {
@@ -118,9 +124,13 @@ class InMemoryTaskManager implements TaskManager {
             return null;
         }
 
-        updateEpicTime(newEpic);
         newEpic.setId(generateNewId());
         newEpic.setStatus(Status.NEW);
+
+        if (newEpic.getDuration() == null) {
+            newEpic.setDuration(Duration.ZERO);
+        }
+
         Epic savedEpic = newEpic.getCopy();
         idToEpic.put(savedEpic.getId(), savedEpic);
 
@@ -143,6 +153,10 @@ class InMemoryTaskManager implements TaskManager {
 
         Integer subtaskId = generateNewId();
         newSubtask.setId(subtaskId);
+
+        if (newSubtask.getDuration() == null) {
+            newSubtask.setDuration(Duration.ZERO);
+        }
 
         Subtask savedSubtask = newSubtask.getCopy();
 
@@ -254,12 +268,23 @@ class InMemoryTaskManager implements TaskManager {
             return null;
         }
 
-        if (isFoundIntersections(newTask)) {
+        Task oldTask = idToTask.get(id);
+
+        Task testTask = newTask.getCopy();
+
+        if (testTask.getDuration() == null) {
+            testTask.setDuration(oldTask.getDuration());
+        }
+
+        if (testTask.getStartTime() == null) {
+            testTask.setStartTime(oldTask.getStartTime());
+        }
+
+        if (testTask.getEndTime() != null && !findIntersections(testTask).isEmpty()) {
             System.out.println("Ошибка обновления задачи - это время уже занято.");
             return null;
         }
 
-        Task oldTask = idToTask.get(id);
 
         if (newTask.getTitle() != null) {
             oldTask.setTitle(newTask.getTitle());
@@ -273,7 +298,7 @@ class InMemoryTaskManager implements TaskManager {
             oldTask.setStatus(newTask.getStatus());
         }
 
-        if (newTask.getDuration() != Duration.ZERO) {
+        if (newTask.getDuration() != null) {
             oldTask.setDuration(newTask.getDuration());
         }
 
@@ -306,13 +331,7 @@ class InMemoryTaskManager implements TaskManager {
             oldEpic.setDescription(newEpic.getDescription());
         }
 
-        if (newEpic.getStartTime() != null) {
-            oldEpic.setStartTime(newEpic.getStartTime());
-        }
-
         newEpic = oldEpic.getCopy();
-
-        updateEpicTime(oldEpic);
 
         return newEpic;
     }
@@ -320,18 +339,28 @@ class InMemoryTaskManager implements TaskManager {
     /// Обновление подзадачи по объекту
     @Override
     public Subtask updateSubtask(Subtask newSubtask) {
-        Integer id = newSubtask.getId();
-        if (id == null || !(idToSubtask.containsKey(id))) {
+        Integer subtaskId = newSubtask.getId();
+        if (subtaskId == null || !(idToSubtask.containsKey(subtaskId))) {
             System.out.println("Ошибка обновления подзадачи - неверные входные данные.");
             return null;
         }
 
-        if (isFoundIntersections(newSubtask)) {
+        Subtask oldSubtask = idToSubtask.get(subtaskId);
+
+        Subtask testSubtask = newSubtask.getCopy();
+
+        if (testSubtask.getDuration() == null) {
+            testSubtask.setDuration(oldSubtask.getDuration());
+        }
+
+        if (testSubtask.getStartTime() == null) {
+            testSubtask.setStartTime(oldSubtask.getStartTime());
+        }
+
+        if (testSubtask.getStartTime() != null && !findIntersections(testSubtask).isEmpty()) {
             System.out.println("Ошибка обновления подзадачи - это время уже занято.");
             return null;
         }
-
-        Subtask oldSubtask = idToSubtask.get(id);
 
         if (newSubtask.getTitle() != null) {
             oldSubtask.setTitle(newSubtask.getTitle());
@@ -345,7 +374,7 @@ class InMemoryTaskManager implements TaskManager {
             oldSubtask.setStatus(newSubtask.getStatus());
         }
 
-        if (newSubtask.getDuration() != Duration.ZERO) {
+        if (newSubtask.getDuration() != null) {
             oldSubtask.setDuration(newSubtask.getDuration());
         }
 
@@ -357,26 +386,132 @@ class InMemoryTaskManager implements TaskManager {
         newSubtask = oldSubtask.getCopy();
 
         int epicId = oldSubtask.getEpicId();
+        Epic epic = idToEpic.get(epicId);
+        epic.addSubtaskId(subtaskId);
         updateEpicsStatus(epicId);
-        updateEpicTime(idToEpic.get(epicId));
+        updateEpicTime(epic);
 
         return newSubtask;
     }
 
-    /// Проверка пересечений времени
-    private boolean isFoundIntersections(Task taskObject) {
-        Task savedTask = getWithoutHistory(taskObject.getId());
-        Task testTask = taskObject.getCopy();
-
-        if (testTask.getStartTime() == null) {
-            testTask.setStartTime(savedTask.getStartTime());
+    /// Обновление продолжительности эпика
+    protected void updateEpicTime(Epic epic) {
+        if (epic.getId() == null) {
+            return;
         }
 
-        if (testTask.getDuration() == null) {
-            testTask.setDuration(savedTask.getDuration());
+        clearEpicTime(epic);
+
+        List<Subtask> subtasks = getAllSubTasksByEpic(epic.getId());
+
+        if (subtasks == null) {
+            return;
         }
 
-        return !findIntersections(testTask).isEmpty();
+        List<Subtask> subtasksWithDateTimeUnits = subtasks.stream()
+                .filter(subtask -> subtask.getStartTime() != null || subtask.getDuration() != null)
+                .toList();
+
+        if (subtasksWithDateTimeUnits.isEmpty()) {
+            return;
+        }
+
+        Optional<Duration> sumDuration = Optional.ofNullable(subtasksWithDateTimeUnits.stream()
+                .map(Subtask::getDuration)
+                .reduce(Duration.ZERO, Duration::plus));
+
+        epic.setDuration(sumDuration.orElse(Duration.ZERO));
+
+        List<Subtask> prioritizedSubtasks = subtasksWithDateTimeUnits.stream()
+                .filter(subtask -> subtask.getStartTime() != null)
+                .toList();
+
+        if (prioritizedSubtasks.isEmpty()) {
+            return;
+        }
+
+        if (prioritizedSubtasks.size() == 1) {
+            LocalDateTime time = subtasksWithDateTimeUnits.getFirst().getStartTime();
+            epic.setStartTime(time);
+            epic.setEndTime(time);
+            epic.setDuration(sumDuration.orElse(Duration.ZERO));
+            return;
+        }
+
+        Subtask firstSubtask = prioritizedSubtasks.stream()
+                .min(Comparator.comparing(Subtask::getStartTime))
+                .get();
+
+        Subtask lastSubtask = prioritizedSubtasks.stream()
+                .max(Comparator.comparing(Subtask::getStartTime))
+                .get();
+
+        epic.setStartTime(firstSubtask.getStartTime());
+        epic.setEndTime(lastSubtask.getEndTime());
+    }
+
+    /// Обновление статуса эпика
+    protected void updateEpicsStatus(int epicId) {
+        Epic epic = idToEpic.get(epicId);
+        if (epic.getStatus() == null) {
+            return;
+        }
+
+        int statusNullCount = 0;
+        ArrayList<Status> epicStatuses = new ArrayList<>();
+        for (int subtaskId : epic.getSubtaskIds()) {
+            Subtask subtask = idToSubtask.get(subtaskId);
+            if (subtask.getEpicId() == epicId && subtask.getStatus() != null) {
+                epicStatuses.add(subtask.getStatus());
+            } else if (subtask.getEpicId() == epicId && subtask.getStatus() == null) {
+                statusNullCount++;
+                epicStatuses.add(Status.NEW);
+            }
+        }
+
+        if (epicStatuses.isEmpty() || statusNullCount == epicStatuses.size()) {
+            epic.setStatus(Status.NEW);
+            return;
+        }
+
+        int statusNewCount = 0;
+        int statusDoneCount = 0;
+        for (Status status : epicStatuses) {
+            switch (status) {
+                case Status.NEW -> statusNewCount++;
+                case Status.DONE -> statusDoneCount++;
+            }
+        }
+
+        if (statusNewCount == epicStatuses.size()) {
+            epic.setStatus(Status.NEW);
+        } else if (statusDoneCount == epicStatuses.size()) {
+            epic.setStatus(Status.DONE);
+        } else {
+            epic.setStatus(Status.IN_PROGRESS);
+        }
+    }
+
+    /// Обнуление полей времени эпика
+    protected void clearEpicTime(Epic epic) {
+        epic.setStartTime(null);
+        epic.setEndTime(null);
+        epic.setDuration(Duration.ZERO);
+    }
+
+    ///  Поиск пересекающихся тасок
+    public List<Task> findIntersections(Task taskObject) {
+        if (prioritizedTasks.isEmpty() || taskObject.getStartTime() == null) {
+            return new ArrayList<>();
+        }
+
+        return prioritizedTasks.stream()
+                .filter(task -> !Objects.equals(task.getId(), taskObject.getId()))
+                .filter(task ->
+                        (taskObject.getStartTime().isBefore(task.getEndTime()) &&
+                                task.getStartTime().isBefore(taskObject.getEndTime()))
+                )
+                .toList();
     }
 
     /// Удаление задачи по ID
@@ -458,9 +593,9 @@ class InMemoryTaskManager implements TaskManager {
 
         for (int subtaskId : idToSubtask.keySet()) {
             historyManager.remove(subtaskId);
+            prioritizedTasks.removeIf(task -> task.getId() == subtaskId);
         }
         idToSubtask.clear();
-        prioritizedTasks.removeIf(task -> task.getType() == Type.EPIC);
     }
 
     /// Удаление всех подзадач
@@ -468,6 +603,7 @@ class InMemoryTaskManager implements TaskManager {
     public void removeAllSubTasks() {
         for (int subtaskId : idToSubtask.keySet()) {
             historyManager.remove(subtaskId);
+            prioritizedTasks.removeIf(task -> task.getId() == subtaskId);
         }
         idToSubtask.clear();
 
@@ -476,112 +612,11 @@ class InMemoryTaskManager implements TaskManager {
             updateEpicsStatus(epic.getId());
             clearEpicTime(epic);
         }
-        prioritizedTasks.removeIf(task -> task.getType() == Type.SUBTASK);
     }
 
     ///  Получить список с историей
     @Override
     public List<Task> getHistory() {
         return historyManager.getHistory();
-    }
-
-    /// Обновление статуса эпика
-    protected void updateEpicsStatus(int epicId) {
-        Epic epic = idToEpic.get(epicId);
-        if (epic.getStatus() == null) {
-            return;
-        }
-
-        int statusNullCount = 0;
-        ArrayList<Status> epicStatuses = new ArrayList<>();
-        for (int subtaskId : epic.getSubtaskIds()) {
-            Subtask subtask = idToSubtask.get(subtaskId);
-            if (subtask.getEpicId() == epicId && subtask.getStatus() != null) {
-                epicStatuses.add(subtask.getStatus());
-            } else if (subtask.getEpicId() == epicId && subtask.getStatus() == null) {
-                statusNullCount++;
-                epicStatuses.add(Status.NEW);
-            }
-        }
-
-        if (epicStatuses.isEmpty() || statusNullCount == epicStatuses.size()) {
-            epic.setStatus(Status.NEW);
-            return;
-        }
-
-        int statusNewCount = 0;
-        int statusDoneCount = 0;
-        for (Status status : epicStatuses) {
-            switch (status) {
-                case Status.NEW -> statusNewCount++;
-                case Status.DONE -> statusDoneCount++;
-            }
-        }
-
-        if (statusNewCount == epicStatuses.size()) {
-            epic.setStatus(Status.NEW);
-        } else if (statusDoneCount == epicStatuses.size()) {
-            epic.setStatus(Status.DONE);
-        } else {
-            epic.setStatus(Status.IN_PROGRESS);
-        }
-    }
-
-    ///  Поиск пересекающихся тасок
-    public List<Task> findIntersections(Task taskObject) {
-        if (prioritizedTasks.isEmpty() || taskObject.getStartTime() == null) {
-            return new ArrayList<>();
-        }
-
-        return prioritizedTasks.stream()
-                .filter(task -> !Objects.equals(task.getId(), taskObject.getId()))
-                .filter(task ->
-                        (taskObject.getStartTime().isBefore(task.getEndTime()) &&
-                                task.getStartTime().isBefore(taskObject.getEndTime()))
-                )
-                .toList();
-    }
-
-    /// Обнуление полей времени эпика
-    protected void clearEpicTime(Epic epic) {
-        epic.setStartTime(null);
-        epic.setEndTime(null);
-        epic.setDuration(Duration.ZERO);
-    }
-
-    /// Обновление продолжительности эпика
-    protected void updateEpicTime(Epic epic) {
-        if (epic.getId() == null || epic.getStartTime() == null) {
-            return;
-        }
-        List<Subtask> prioritizedSubtasks = getAllSubTasksByEpic(epic.getId()).stream()
-                .filter(subtask -> subtask.getStartTime() != null)
-                .toList();
-
-        if (prioritizedSubtasks.isEmpty()) {
-            clearEpicTime(epic);
-            return;
-        }
-
-        Subtask firstSubtask = prioritizedSubtasks.stream()
-                .min(Comparator.comparing(Subtask::getStartTime))
-                .get();
-
-        Subtask lastSubtask = prioritizedSubtasks.stream()
-                .max(Comparator.comparing(Subtask::getStartTime))
-                .get();
-
-        if (firstSubtask.equals(lastSubtask)) {
-            clearEpicTime(epic);
-            epic.setStartTime(firstSubtask.getStartTime());
-        }
-
-        Optional<Duration> sumDuration = Optional.ofNullable(prioritizedSubtasks.stream()
-                .map(Subtask::getDuration)
-                .reduce(Duration.ZERO, Duration::plus));
-
-            epic.setStartTime(firstSubtask.getStartTime());
-            epic.setEndTime(lastSubtask.getEndTime());
-            epic.setDuration(sumDuration.orElse(Duration.ZERO));
     }
 }

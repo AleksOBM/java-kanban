@@ -9,7 +9,7 @@ public class Subtask extends Task {
     private final Integer epicId;
 
     /// Конструктор
-    public  Subtask(
+    public Subtask(
             Integer id,
             String title,
             String description,
@@ -57,7 +57,7 @@ public class Subtask extends Task {
                 ", description='" + super.getDescription() + '\'' +
                 ", status='" + super.getStatus() + '\'' +
                 ", startTime='" + (startTime == null ? "null" : startTime.format(DATE_TIME_FORMATTER)) + '\'' +
-                ", endTime='" + (endTime == null ? "null" : endTime.format(DATE_TIME_FORMATTER)) + '\'' +
+                ", endTime='" + (getEndTime() == null ? "null" : getEndTime().format(DATE_TIME_FORMATTER)) + '\'' +
                 ", duration='" + (duration == null ? "null" : duration.toMinutes()) + '\'' +
                 '}';
     }

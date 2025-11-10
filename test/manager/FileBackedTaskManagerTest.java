@@ -67,7 +67,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest {
                 Status.IN_PROGRESS
         ));
 
-        // Создать новый эпик
+        // Создать новый эпик id будет 2
         epic = new Epic(
                 777,
                 "Test addNewEpic title",
@@ -77,26 +77,26 @@ class FileBackedTaskManagerTest extends TaskManagerTest {
         // Добавить эпик в базу и получить идентификатор добавленного эпика
         epicId = manager.addEpic(epic).getId();
 
-        // Добавить первую подзадачу в созданный эпик
+        // Добавить первую подзадачу (id будет 3) в созданный эпик
         manager.addSubtask(new Subtask(
                 777,
                 "This is first Subtask",
                 "This is description of first Subtask",
                 Status.IN_PROGRESS,
                 epicId,
-                null,
-                null
+                LocalDateTime.parse("2025-11-10T08:30"),
+                Duration.ofMinutes(70)
         ));
 
-        // Добавить вторую подзадачу в созданный эпик
+        // Добавить вторую подзадачу (id будет 4) в созданный эпик
         manager.addSubtask(new Subtask(
                 null,
                 "This is third Subtask",
                 "This is description of third Subtask",
                 Status.DONE,
                 epicId,
-                null,
-                null
+                LocalDateTime.parse("2025-11-10T08:00"),
+                Duration.ofMinutes(30)
         ));
 
         // Получить все подзадачи

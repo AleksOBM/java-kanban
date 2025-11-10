@@ -32,7 +32,7 @@ class SubtaskTest {
                         "status='null'" +
                         ", startTime='null'" +
                         ", endTime='null'" +
-                        ", duration='0'" +
+                        ", duration='null'" +
                         "}",
                 subtask.toString(),
                 "Подзадача возвращает некорректную строку при вызове toString.");

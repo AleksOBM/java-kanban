@@ -23,10 +23,7 @@ public class Task implements Comparable<Task> {
     protected LocalDateTime startTime;
 
     /// Продолжительность задачи в минутах
-    protected Duration duration = Duration.ZERO;
-
-    /// Дата и время завершения задачи
-    protected LocalDateTime endTime;
+    protected Duration duration;
 
     protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -59,7 +56,7 @@ public class Task implements Comparable<Task> {
         this.description = description;
         this.status = status;
         this.startTime = startTime;
-        setDuration(duration);
+        this.duration = duration;
     }
 
     /// Получение ID задачи
@@ -110,9 +107,6 @@ public class Task implements Comparable<Task> {
     /// Внесение времени начала выполнения
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
-        if (startTime != null) {
-            endTime = this.startTime.plus(this.duration);
-        }
     }
 
     /// Время выполнения задачи
@@ -122,16 +116,14 @@ public class Task implements Comparable<Task> {
 
     /// Внесение продолжительности задачи
     public void setDuration(Duration duration) {
-        if (duration != null) {
-            this.duration = duration;
-        }
-        if (startTime != null) {
-            endTime = startTime.plus(this.duration);
-        }
+        this.duration = duration;
     }
 
     public LocalDateTime getEndTime() {
-        return endTime;
+        if (startTime != null && duration != null) {
+            return startTime.plus(duration);
+        }
+        return null;
     }
 
     /// Получение типа объекта
@@ -169,7 +161,7 @@ public class Task implements Comparable<Task> {
                 ", description='" + description + '\'' +
                 ", status='" + status + '\'' +
                 ", startTime='" + (startTime == null ? "null" : startTime.format(DATE_TIME_FORMATTER)) + '\'' +
-                ", endTime='" + (endTime == null ? "null" : endTime.format(DATE_TIME_FORMATTER)) + '\'' +
+                ", endTime='" + (getEndTime() == null ? "null" : getEndTime().format(DATE_TIME_FORMATTER)) + '\'' +
                 ", duration='" + (duration == null ? "null" : duration.toMinutes()) + '\'' +
                 '}';
     }

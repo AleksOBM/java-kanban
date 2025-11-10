@@ -632,18 +632,18 @@ public class Main {
                 System.out.println("\n" + "-".repeat(20) + "\n");
                 return;
             }
-
-            System.out.print("Год --> ");
-            int year = Integer.parseInt(scanner.next());
-            System.out.print("Месяц --> ");
-            int month = Integer.parseInt(scanner.next());
-            System.out.print("День --> ");
-            int day = Integer.parseInt(scanner.next());
+//            System.out.print("Год --> ");
+//            int year = Integer.parseInt(scanner.next());
+//            System.out.print("Месяц --> ");
+//            int month = Integer.parseInt(scanner.next());
+//            System.out.print("День --> ");
+//            int day = Integer.parseInt(scanner.next());
             System.out.print("Часы --> ");
             int hours = Integer.parseInt(scanner.next());
             System.out.print("Минуты --> ");
             int minutes = Integer.parseInt(scanner.next());
-            LocalDateTime dateTime = LocalDateTime.of(year, month, day, hours, minutes);
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime dateTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), hours, minutes);
             System.out.println("\n" + "-".repeat(20) + "\n");
 
             switch (type) {
