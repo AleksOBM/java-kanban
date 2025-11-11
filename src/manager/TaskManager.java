@@ -6,14 +6,15 @@ import data.Task;
 import data.Type;
 
 import java.util.List;
+import java.util.TreeSet;
 
 public interface TaskManager {
 
-    Task setTask(Task newTask);
+    Task addTask(Task newTask);
 
-    Epic setEpic(Epic newEpic);
+    Epic addEpic(Epic newEpic);
 
-    Subtask setSubtask(Subtask newSubtask);
+    Subtask addSubtask(Subtask newSubtask);
 
     Task getTask(int taskID);
 
@@ -49,9 +50,9 @@ public interface TaskManager {
 
     void removeAllSubTasks();
 
-    List<? extends Task> getHistory();
+    List<Task> getHistory();
 
-    List<? extends Task> getAll();
+    TreeSet<Task> getAll();
 
     Task get(int id);
 

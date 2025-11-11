@@ -8,12 +8,14 @@ import data.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TaskManagerTest {
+class TaskManagerTest {
 
     static TaskManager manager;
 
@@ -44,12 +46,15 @@ public class TaskManagerTest {
         task = new Task(
                 777,
                 "Test addNewTask title",
-                "Test addNewTask description"
+                "Test addNewTask description",
+                null,
+                LocalDateTime.of(2025, 11, 11, 11, 11),
+                Duration.ofMinutes(30)
         );
 
         // Добавить задачу в базу и получить идентификатор добавленной задачи
         assertNotNull(manager);
-        taskId = manager.setTask(task).getId();
+        taskId = manager.addTask(task).getId();
 
         // Получить задачу из базы по идентификатору
         savedTask = manager.getTask(taskId);
@@ -65,7 +70,7 @@ public class TaskManagerTest {
                 Status.IN_PROGRESS
         ));
 
-        // Создать новый эпик
+        // Создать новый эпик id будет 2
         epic = new Epic(
                 777,
                 "Test addNewEpic title",
@@ -73,24 +78,28 @@ public class TaskManagerTest {
         );
 
         // Добавить эпик в базу и получить идентификатор добавленного эпика
-        epicId = manager.setEpic(epic).getId();
+        epicId = manager.addEpic(epic).getId();
 
-        // Добавить первую подзадачу в созданный эпик
-        manager.setSubtask(new Subtask(
+        // Добавить первую подзадачу (id будет 3) в созданный эпик
+        manager.addSubtask(new Subtask(
                 777,
                 "This is first Subtask",
                 "This is description of first Subtask",
                 Status.IN_PROGRESS,
-                epicId
+                epicId,
+                LocalDateTime.parse("2025-11-10T08:30"),
+                Duration.ofMinutes(70)
         ));
 
-        // Добавить вторую подзадачу в созданный эпик
-        manager.setSubtask(new Subtask(
+        // Добавить вторую подзадачу (id будет 4) в созданный эпик
+        manager.addSubtask(new Subtask(
                 null,
                 "This is third Subtask",
                 "This is description of third Subtask",
                 Status.DONE,
-                epicId
+                epicId,
+                LocalDateTime.parse("2025-11-10T08:00"),
+                Duration.ofMinutes(30)
         ));
 
         // Получить все подзадачи
@@ -199,7 +208,8 @@ public class TaskManagerTest {
     @Test
     void shouldUpdateEpicTitleWhenUpdateEpic() {
         manager.updateEpic(new Epic(2, "HelloWorld!", null));
-        assertEquals("HelloWorld!", manager.getEpic(2).getTitle(), "Менеджер неправильно обновляет эпик.");
+        assertEquals("HelloWorld!", manager.getEpic(2).getTitle(),
+                "Менеджер неправильно обновляет эпик.");
     }
 
     @Test
@@ -239,8 +249,24 @@ public class TaskManagerTest {
 
     @Test
     void shouldReturnStatusNewWhenAllSubtasksInStatusesNull() {
-        manager.setSubtask(new Subtask(null, null, null, null, 2));
-        manager.setSubtask(new Subtask(null, null, null, null, 2));
+        manager.addSubtask(new Subtask(
+                null,
+                null,
+                null,
+                null,
+                2,
+                null,
+                null
+        ));
+        manager.addSubtask(new Subtask(
+                null,
+                null,
+                null,
+                null,
+                2,
+                null,
+                null
+        ));
         manager.removeSubtask(3);
         manager.removeSubtask(4);
         assertEquals(Status.NEW, manager.getEpic(2).getStatus(),
@@ -250,7 +276,15 @@ public class TaskManagerTest {
     @Test
     void shouldReturnNullWhenAddingSubtaskWithMissingId() {
         try {
-            manager.setSubtask(new Subtask(null, "Hello", "World", null, 777));
+            manager.addSubtask(new Subtask(
+                    null,
+                    "Hello",
+                    "World",
+                    null,
+                    777,
+                    null,
+                    null
+            ));
         } catch (NullPointerException e) {
             System.out.print("");
         }
@@ -281,13 +315,21 @@ public class TaskManagerTest {
 
     @Test
     void shouldReturnNullWhenTryingToGetAllSubtasks() {
-        assertNull( manager.getAllSubTasksByEpic(100),
+        assertNull(manager.getAllSubTasksByEpic(100),
                 "Менеджер не возвращает null при попытке получения всех подзадач несуществующего эпика");
     }
 
     @Test
     void shouldUpdateEpicStatusWhenAllHimSubtasksIsDone() {
-        manager.updateSubtask(new Subtask(3, null, null, Status.DONE, null));
+        manager.updateSubtask(new Subtask(
+                3,
+                null,
+                null,
+                Status.DONE,
+                null,
+                null,
+                null
+        ));
         assertEquals(Status.DONE, manager.getAllEpics().getLast().getStatus(),
                 "Статус эпика не обновляется когда все его подзадачи завершены");
     }
@@ -337,7 +379,7 @@ public class TaskManagerTest {
         manager.removeAllTasks();
         assertEquals(2, manager.getHistory().getFirst().getId(),
                 "При удалении всех задач они не удаляются из истории"
-                );
+        );
     }
 
     @Test
@@ -358,12 +400,99 @@ public class TaskManagerTest {
 
     @Test
     void shouldReturnTwoWhenAllSubtasksByEpicIsDeleted() {
-        manager.setEpic(new Epic(null, null, null));
-        manager.setSubtask(new Subtask(null, null, null, null, 5));
+        manager.addEpic(new Epic(null, null, null));
+        manager.addSubtask(new Subtask(
+                null,
+                null,
+                null,
+                null,
+                5,
+                null,
+                null
+        ));
         manager.getSubtask(6);
         manager.removeAllSubtasksByEpic(2);
         assertEquals(3, manager.getHistory().size(),
                 "При удалении всех подзадач эпика они не удаляются из истории"
         );
     }
+
+    @Test
+    void shouldReturnNullWhenAddIntersectionTasks() {
+        assertNull(manager.addTask(new Task(null, null, null, null,
+                        LocalDateTime.parse("2025-11-11T10:30"), Duration.ofMinutes(50))),
+                "Менеджер добавляет пересекающиеся задачи по верхней границе.");
+
+        assertNull(manager.addTask(new Task(null, null, null, null,
+                        LocalDateTime.parse("2025-11-11T11:15"), Duration.ofMinutes(10))),
+                "Менеджер добавляет пересекающиеся задачи внутрь временного контура.");
+
+        assertNull(manager.addTask(new Task(null, null, null, null,
+                        LocalDateTime.parse("2025-11-11T11:30"), Duration.ofMinutes(50))),
+                "Менеджер добавляет пересекающиеся задачи по нижней границе.");
+    }
+
+    @Test
+    void shouldReturnExpectedDateTimeOfEpicAfterAddPrioritizedSubtasks() {
+        assertEquals("2025-11-10T08:00", manager.getEpic(2).getStartTime().toString(),
+                "Менеджер не правильно считает время старта эпика.");
+
+        assertEquals("2025-11-10T09:40", manager.getEpic(2).getEndTime().toString(),
+                "Менеджер не правильно считает завершения старта эпика.");
+
+        assertEquals(100, manager.getEpic(2).getDuration().toMinutes(),
+                "Менеджер не правильно считает общее время эпика.");
+    }
+
+    @Test
+    void shouldReturnExpectedDateTimeAfterUpdateSubtask() {
+        assertEquals("2025-11-10T08:00", manager.updateSubtask(new Subtask(
+                        3, null, null, null, null,
+                        LocalDateTime.parse("2025-11-10T06:50"), null)).getEndTime().toString(),
+                "Менеджер возвращает подзадачу с некорректной датой завершения после обновления даты старта");
+
+        assertEquals("2025-11-10T06:50", manager.updateSubtask(new Subtask(
+                        3, null, null, null, null,
+                        null, Duration.ZERO)).getEndTime().toString(),
+                "Менеджер возвращает подзадачу с некорректной датой завершения после обновления срока");
+    }
+
+    @Test
+    void shouldReturnExpectedDateTimeOfEpicAfterUpdateSubtasksDate() {
+        manager.updateSubtask(new Subtask(
+                3, null, null, null, null,
+                LocalDateTime.parse("2025-11-10T18:00"), null));
+
+        assertEquals("2025-11-10T08:00", manager.getEpic(2).getStartTime().toString(),
+                "Менеджер возвращает не верную дату начала эпика после обновления его подзадачи.");
+        assertEquals("2025-11-10T19:10", manager.getEpic(2).getEndTime().toString(),
+                "Менеджер возвращает не верную дату завершения эпика после обновления его подзадачи.");
+        assertEquals(100, manager.getEpic(2).getDuration().toMinutes(),
+                "Менеджер возвращает не верный срок эпика после обновления его подзадачи.");
+
+        manager.addSubtask(new Subtask(
+                null,
+                null,
+                null,
+                null,
+                2,
+                null,
+                null
+        ));
+
+        manager.updateSubtask(new Subtask(5, null, null, null, null,
+                LocalDateTime.parse("2025-11-10T19:10"),
+                null
+        ));
+
+        manager.updateSubtask(new Subtask(5, null, null, null, null,
+                null,
+                Duration.ofMinutes(140)
+        ));
+
+        assertEquals(240, manager.getEpic(2).getDuration().toMinutes(),
+                "Менеджер возвращает не верный срок эпика после добавления в него подзадачи.");
+
+    }
+
 }
