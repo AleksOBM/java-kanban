@@ -6,7 +6,6 @@ import data.Task;
 import manager.InMemoryTaskManager;
 import manager.Managers;
 import manager.TaskManager;
-import manager.TaskManagerType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
