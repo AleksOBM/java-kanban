@@ -4,16 +4,13 @@ import data.*;
 import exception.ManagerSaveException;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class FileBackedTaskManager extends InMemoryTaskManager {
+public class FileBackedTaskManager extends InMemoryTaskManager implements Property {
 
     private static File file;
     private static FileBackedTaskManager instance;
@@ -21,8 +18,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /// Параметры CSV файла
     //                                          0   1    2     3         4        5    6      7     8
     private static final String TABLE_HEADER = "id,type,name,status,description,start,end,duration,epic";
-    private static final Charset CHARSET = StandardCharsets.UTF_8;
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final String DELIMITER = ",";
     private static final String QUOTE = "\"";
 
