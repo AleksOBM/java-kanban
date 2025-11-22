@@ -30,13 +30,13 @@ public class EpicsHandler extends BaseHttpHandler {
                 String pathId = path.replaceFirst("/epics/", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.GET_EPIC, path);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
                 Epic epic = manager.getEpic(id);
                 if (epic == null) {
-                    sendNotFound(exchange, Endpoint.GET_EPIC);
+                    sendNotFound(exchange, endpoint);
                     return;
                 }
 
@@ -44,12 +44,12 @@ public class EpicsHandler extends BaseHttpHandler {
                 try {
                     jsonEpic = gson.toJson(epic);
                 } catch (Exception exception) {
-                    sendServerError(exchange, Endpoint.GET_EPIC);
+                    sendServerError(exchange, endpoint);
                     System.out.println(exception.getMessage());
                     return;
                 }
 
-                sendText(exchange, Endpoint.GET_EPIC, jsonEpic);
+                sendText(exchange, endpoint, jsonEpic);
 
             }
 
@@ -57,7 +57,7 @@ public class EpicsHandler extends BaseHttpHandler {
 
                 List<Epic> epicList = manager.getAllEpics();
                 if (epicList.isEmpty()) {
-                    sendNotFound(exchange, Endpoint.GET_ALL_EPICS);
+                    sendNotFound(exchange, endpoint);
                     return;
                 }
 
@@ -65,12 +65,12 @@ public class EpicsHandler extends BaseHttpHandler {
                 try {
                     jsonEpicList = gson.toJson(epicList);
                 } catch (Exception exception) {
-                    sendServerError(exchange, Endpoint.GET_ALL_EPICS);
+                    sendServerError(exchange, endpoint);
                     System.out.println(exception.getMessage());
                     return;
                 }
 
-                sendText(exchange, Endpoint.GET_ALL_EPICS, jsonEpicList);
+                sendText(exchange, endpoint, jsonEpicList);
 
             }
 
@@ -83,16 +83,21 @@ public class EpicsHandler extends BaseHttpHandler {
                 try {
                     epic = gson.fromJson(body, Epic.class);
                 } catch (Exception e) {
-                    sendServerError(exchange, Endpoint.POST_NEW_EPIC);
+                    sendBadRequestBoby(exchange, endpoint);
                     System.out.println(e.getMessage());
                     return;
                 }
 
-                if (manager.addEpic(epic) == null) {
-                    sendHasOverlaps(exchange, Endpoint.POST_NEW_EPIC, epic);
-                } else {
-                    sendText(exchange, Endpoint.POST_NEW_EPIC,"epic adding success");
+                Integer epicId;
+                try {
+                    epicId = manager.addEpic(epic).getId();
+                } catch (Exception exception) {
+                    sendServerError(exchange, endpoint);
+                    System.out.println(exception.getMessage());
+                    return;
                 }
+
+                sendText(exchange, endpoint, "epic adding success, epicId=" + epicId);
 
             }
 
@@ -101,7 +106,7 @@ public class EpicsHandler extends BaseHttpHandler {
                 String pathId = path.replaceFirst("/epics/", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.POST_UPDATE_EPIC, path);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
@@ -112,15 +117,21 @@ public class EpicsHandler extends BaseHttpHandler {
                 try {
                     epic = gson.fromJson(body, Epic.class);
                 } catch (Exception e) {
-                    sendServerError(exchange, Endpoint.POST_UPDATE_EPIC);
+                    sendBadRequestBoby(exchange, endpoint);
                     System.out.println(e.getMessage());
                     return;
                 }
 
+                Integer epicId = epic.getId();
+                if (epicId == null || id != epicId) {
+                    sendUnprocessableEntity(exchange, endpoint);
+                    return;
+                }
+
                 if (manager.updateEpic(epic) == null) {
-                    sendNotFound(exchange, Endpoint.POST_UPDATE_EPIC);
+                    sendNotFound(exchange, endpoint);
                 } else {
-                    sendText(exchange, Endpoint.POST_UPDATE_EPIC,"epic updated success");
+                    sendText(exchange, endpoint, "epic updated success");
                 }
 
             }
@@ -130,14 +141,14 @@ public class EpicsHandler extends BaseHttpHandler {
                 String pathId = path.replaceFirst("/epics/", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.DELETE_EPIC, path);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
                 if (manager.removeEpic(id)) {
-                    sendText(exchange, Endpoint.DELETE_EPIC, "epic removed success");
+                    sendText(exchange, endpoint, "epic removed success");
                 } else {
-                    sendServerError(exchange, Endpoint.DELETE_EPIC);
+                    sendNotFound(exchange, endpoint);
                 }
 
             }
@@ -148,19 +159,13 @@ public class EpicsHandler extends BaseHttpHandler {
                 pathId = pathId.replaceFirst("/subtasks", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.GET_ALL_SUBTASKS_BY_EPIC, path);
-                    return;
-                }
-
-                Epic epic = manager.getEpic(id);
-                if (epic == null) {
-                    sendNotFound(exchange, Endpoint.GET_ALL_SUBTASKS_BY_EPIC);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
                 List<Subtask> subtaskList = manager.getAllSubTasksByEpic(id);
                 if (subtaskList.isEmpty()) {
-                    sendNotFound(exchange, Endpoint.GET_ALL_SUBTASKS_BY_EPIC);
+                    sendNotFound(exchange, endpoint);
                     return;
                 }
 
@@ -168,16 +173,16 @@ public class EpicsHandler extends BaseHttpHandler {
                 try {
                     jsonSubtaskList = gson.toJson(subtaskList);
                 } catch (Exception exception) {
-                    sendServerError(exchange, Endpoint.GET_ALL_SUBTASKS_BY_EPIC);
+                    sendServerError(exchange, endpoint);
                     System.out.println(exception.getMessage());
                     return;
                 }
 
-                sendText(exchange, Endpoint.GET_ALL_SUBTASKS_BY_EPIC, jsonSubtaskList);
+                sendText(exchange, endpoint, jsonSubtaskList);
 
             }
 
-            case UNKNOWN -> sendFormatException(exchange, Endpoint.UNKNOWN, path);
+            case UNKNOWN -> sendFormatException(exchange, endpoint, path);
         }
     }
 }

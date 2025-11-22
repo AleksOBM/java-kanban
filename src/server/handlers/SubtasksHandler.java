@@ -29,13 +29,13 @@ public class SubtasksHandler extends BaseHttpHandler {
                 String pathId = path.replaceFirst("/subtasks/", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.GET_SUBTASK, path);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
                 Subtask subtask = manager.getSubtask(id);
                 if (subtask == null) {
-                    sendNotFound(exchange, Endpoint.GET_SUBTASK);
+                    sendNotFound(exchange, endpoint);
                     return;
                 }
 
@@ -43,12 +43,12 @@ public class SubtasksHandler extends BaseHttpHandler {
                 try {
                     jsonSubtask = gson.toJson(subtask);
                 } catch (Exception exception) {
-                    sendServerError(exchange, Endpoint.GET_SUBTASK);
+                    sendServerError(exchange, endpoint);
                     System.out.println(exception.getMessage());
                     return;
                 }
 
-                sendText(exchange, Endpoint.GET_SUBTASK, jsonSubtask);
+                sendText(exchange, endpoint, jsonSubtask);
 
             }
 
@@ -56,7 +56,7 @@ public class SubtasksHandler extends BaseHttpHandler {
 
                 List<Subtask> subtaskList = manager.getAllSubtasks();
                 if (subtaskList.isEmpty()) {
-                    sendNotFound(exchange, Endpoint.GET_ALL_SUBTASKS);
+                    sendNotFound(exchange, endpoint);
                     return;
                 }
 
@@ -64,11 +64,12 @@ public class SubtasksHandler extends BaseHttpHandler {
                 try {
                     jsonSubtaskList = gson.toJson(subtaskList);
                 } catch (Exception exception) {
-                    sendServerError(exchange, Endpoint.GET_ALL_SUBTASKS);
+                    sendServerError(exchange, endpoint);
                     System.out.println(exception.getMessage());
                     return;
                 }
-                sendText(exchange, Endpoint.GET_ALL_SUBTASKS, jsonSubtaskList);
+
+                sendText(exchange, endpoint, jsonSubtaskList);
 
             }
 
@@ -81,15 +82,25 @@ public class SubtasksHandler extends BaseHttpHandler {
                 try {
                     subtask = gson.fromJson(body, Subtask.class);
                 } catch (Exception e) {
-                    sendServerError(exchange, Endpoint.POST_NEW_SUBTASK);
+                    sendBadRequestBoby(exchange, endpoint);
                     System.out.println(e.getMessage());
                     return;
                 }
 
-                if (manager.addSubtask(subtask) == null) {
-                    sendHasOverlaps(exchange, Endpoint.POST_NEW_SUBTASK, subtask);
+                Integer epicId = subtask.getEpicId();
+                if (epicId == null) {
+                    sendUnprocessableEntity(exchange, endpoint);
+                } else if (manager.getWithoutHistory(epicId) == null) {
+                    sendNotFound(exchange, endpoint);
+                    return;
+                }
+
+                Subtask newSubtask = manager.addSubtask(subtask);
+
+                if (newSubtask == null) {
+                    sendHasOverlaps(exchange, endpoint, subtask);
                 } else {
-                    sendText(exchange, Endpoint.POST_NEW_SUBTASK,"subtask adding success");
+                    sendText(exchange, endpoint, "subtask adding success, subtaskId=" + newSubtask.getId());
                 }
 
             }
@@ -99,7 +110,7 @@ public class SubtasksHandler extends BaseHttpHandler {
                 String pathId = path.replaceFirst("/subtasks/", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.POST_UPDATE_SUBTASK, path);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
@@ -110,15 +121,23 @@ public class SubtasksHandler extends BaseHttpHandler {
                 try {
                     subtask = gson.fromJson(body, Subtask.class);
                 } catch (Exception e) {
-                    sendServerError(exchange, Endpoint.POST_UPDATE_SUBTASK);
+                    sendBadRequestBoby(exchange, endpoint);
                     System.out.println(e.getMessage());
                     return;
                 }
 
+                Integer subtaskId = subtask.getId();
+                if (subtaskId == null || id != subtaskId) {
+                    sendUnprocessableEntity(exchange, endpoint);
+                } else if (manager.getWithoutHistory(subtaskId) == null) {
+                    sendNotFound(exchange, endpoint);
+                    return;
+                }
+
                 if (manager.updateSubtask(subtask) == null) {
-                    sendNotFound(exchange, Endpoint.POST_UPDATE_SUBTASK);
+                    sendHasOverlaps(exchange, endpoint, subtask);
                 } else {
-                    sendText(exchange, Endpoint.POST_UPDATE_SUBTASK,"subtask updated success");
+                    sendText(exchange, endpoint, "subtask updated success");
                 }
 
             }
@@ -128,19 +147,19 @@ public class SubtasksHandler extends BaseHttpHandler {
                 String pathId = path.replaceFirst("/subtasks/", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.DELETE_SUBTASK, path);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
                 if (manager.removeSubtask(id)) {
-                    sendText(exchange, Endpoint.DELETE_SUBTASK, "subtask removed success");
+                    sendText(exchange, endpoint, "subtask removed success");
                 } else {
-                    sendServerError(exchange, Endpoint.DELETE_SUBTASK);
+                    sendNotFound(exchange, endpoint);
                 }
 
             }
 
-            case UNKNOWN -> sendFormatException(exchange, Endpoint.UNKNOWN, path);
+            case UNKNOWN -> sendFormatException(exchange, endpoint, path);
         }
     }
 }

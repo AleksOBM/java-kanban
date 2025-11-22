@@ -15,11 +15,10 @@ import java.util.regex.Pattern;
 public class BaseHttpHandler implements HttpHandler, Property {
 
     protected final TaskManager manager;
-    protected static Gson gson;
+    protected static Gson gson = Managers.getGson();
 
     public BaseHttpHandler(TaskManager manager) {
         this.manager = manager;
-        gson = Managers.getGson();
     }
 
     @Override
@@ -57,6 +56,17 @@ public class BaseHttpHandler implements HttpHandler, Property {
         exchange.close();
     }
 
+    ///Сервер обнаружил в запросе клиента синтаксическую ошибку.
+    protected void sendBadRequestBoby(HttpExchange exchange, Endpoint endpoint) throws IOException {
+        String text = ("\t" + endpoint + " 400 bad request body");
+        byte[] resp = text.getBytes(CHARSET);
+        exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
+        exchange.sendResponseHeaders(400, resp.length);
+        exchange.getResponseBody().write(resp);
+        System.out.println(text);
+        exchange.close();
+    }
+
     /// Для отправки ответа в случае, если объект не был найден
     protected void sendNotFound(HttpExchange exchange, Endpoint endpoint) throws IOException {
         String text = ("\t" + endpoint + " 404 not found");
@@ -68,7 +78,7 @@ public class BaseHttpHandler implements HttpHandler, Property {
         exchange.close();
     }
 
-    /// Для отправки ответа в случае, если объект не был найден
+    /// Сервер понял запрос, но метод, использованный клиентом (например, GET или POST), не разрешен для данного ресурса
     protected void sendFormatException(HttpExchange exchange, Endpoint endpoint, String path) throws IOException {
         String text = ("\t" + endpoint + " 405 path format exception: " + path);
         byte[] resp = text.getBytes(CHARSET);
@@ -79,7 +89,7 @@ public class BaseHttpHandler implements HttpHandler, Property {
         exchange.close();
     }
 
-    /// Для отправки ответа, если при создании или обновлении задача пересекается с уже существующими
+    /// Запрошенный URI не может удовлетворить переданным в заголовке характеристикам.
     protected void sendHasOverlaps(HttpExchange exchange, Endpoint endpoint, Task taskObject) throws IOException {
         String text = ("\t" + endpoint + " 406 time overlaps: " +
                 taskObject.getStartTime().format(DATE_TIME_FORMATTER) + " - " +
@@ -88,6 +98,20 @@ public class BaseHttpHandler implements HttpHandler, Property {
         byte[] resp = text.getBytes(CHARSET);
         exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
         exchange.sendResponseHeaders(406, resp.length);
+        exchange.getResponseBody().write(resp);
+        System.out.println(text);
+        exchange.close();
+    }
+
+    /**
+     * Сервер успешно принял запрос, может работать с указанным видом данных,
+     * однако имеется какая-то логическая ошибка, из-за которой невозможно произвести операцию над ресурсом.
+     */
+    protected void sendUnprocessableEntity(HttpExchange exchange, Endpoint endpoint) throws IOException {
+        String text = ("\t" + endpoint + " 422 unprocessable entity");
+        byte[] resp = text.getBytes(CHARSET);
+        exchange.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
+        exchange.sendResponseHeaders(422, resp.length);
         exchange.getResponseBody().write(resp);
         System.out.println(text);
         exchange.close();
@@ -166,9 +190,6 @@ public class BaseHttpHandler implements HttpHandler, Property {
                     return Endpoint.DELETE_EPIC;
                 }
                 break;
-            }
-            default: {
-                return Endpoint.UNKNOWN;
             }
         }
 

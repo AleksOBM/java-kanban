@@ -1,5 +1,6 @@
 package server.handlers;
 
+import data.Endpoint;
 import data.Epic;
 import data.Subtask;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SubtasksHandlerTest extends HttpTaskServerTest {
+class SubtasksHandlerTest extends HttpTaskServerTest {
 
     @BeforeEach
     void subtaskBeforeEach() {
@@ -36,12 +37,14 @@ public class SubtasksHandlerTest extends HttpTaskServerTest {
     @Test
     void POST_NEW_SUBTASK() {
         shouldReturnStatus200AndBodyOfSuccessAddingAfterAddNewSubtask();
+        shouldReturnStatus422AndBodyOfUnsupportedAfterTryAddSubtaskWithoutEpicId();
     }
 
     @Test
     void POST_UPDATE_SUBTASK() {
         shouldReturnStatus200AndBodyOfSuccessUpdatingAfterUpdateSubtask();
-        shouldReturnStatus200AndBodyOfUpdatedSubtaskAfterGetUpdatedSubtask();
+        shouldReturnStatus422AndBodyOfUnsupportedAfterTryUpdateSubtaskWithoutId();
+        shouldReturnStatus404AndBodyOfNotFoundAfterTryUpdateLostSubtask();
     }
 
     @Test
@@ -82,7 +85,18 @@ public class SubtasksHandlerTest extends HttpTaskServerTest {
         HttpResponse<String> response = responseOfNewPostRequest("subtasks", subtask);
 
         assertEquals(200, response.statusCode());
-        assertEquals("subtask adding success", response.body());
+        assertEquals("subtask adding success, subtaskId=6", response.body());
+    }
+
+    /// Пытается добавить подзадачу, но в теле подзадачи не указан ID эпика
+    private void shouldReturnStatus422AndBodyOfUnsupportedAfterTryAddSubtaskWithoutEpicId() {
+        Subtask subtask = new Subtask(null, "TASK WITHOUT EPIC-ID",
+                null, null, null, null, null);
+
+        HttpResponse<String> response = responseOfNewPostRequest("subtasks", subtask);
+
+        assertEquals(422, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_NEW_SUBTASK + " 422 unprocessable entity", response.body());
     }
 
     /// Обновляет существующую подзадачу и проверяет ответ от сервера
@@ -94,16 +108,32 @@ public class SubtasksHandlerTest extends HttpTaskServerTest {
         assertEquals(200, response.statusCode());
 
         assertEquals("subtask updated success", response.body());
-    }
 
-    /// Получает обновленную задачу с сервера и сверяет все поля
-    private void shouldReturnStatus200AndBodyOfUpdatedSubtaskAfterGetUpdatedSubtask() {
-        HttpResponse<String> response = responseOfNewGetRequest("subtasks/5");
-        assertEquals(200, response.statusCode());
-
-        Subtask requestTask = gson.fromJson(response.body(), Subtask.class);
+        Subtask requestTask = (Subtask) manager.getWithoutHistory(5);
         assertEquals("SECOND SUB UPDATED", requestTask.getTitle());
         assertEquals("second sub", requestTask.getDescription());
+    }
+
+    /// Пытается обновить подзадачу, но в теле подзадачи не указан ID подзадачи
+    private void shouldReturnStatus422AndBodyOfUnsupportedAfterTryUpdateSubtaskWithoutId() {
+        Subtask subtask = new Subtask(null, "TASK WITHOUT ID",
+                null, null, 3, null, null);
+
+        HttpResponse<String> response = responseOfNewPostRequest("tasks/1", subtask);
+
+        assertEquals(422, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_UPDATE_TASK + " 422 unprocessable entity", response.body());
+    }
+
+    /// Пытается обновить подзадачу с несуществующим id
+    private void shouldReturnStatus404AndBodyOfNotFoundAfterTryUpdateLostSubtask() {
+        Subtask subtask = new Subtask(7, "TASK WITH LOST ID",
+                null, null, null, null, null);
+
+        HttpResponse<String> response = responseOfNewPostRequest("subtasks/7", subtask);
+
+        assertEquals(404, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_UPDATE_SUBTASK + " 404 not found", response.body());
     }
 
     /// Удаляет подзадачу и проверяет ответ от сервера

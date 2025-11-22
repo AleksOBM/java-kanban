@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PrioritizedHandlerTest extends HttpTaskServerTest {
+class PrioritizedHandlerTest extends HttpTaskServerTest {
 
     @Test
     void GET_PRIORITIZED() {

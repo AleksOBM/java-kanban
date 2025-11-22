@@ -27,7 +27,7 @@ public class PrioritizedHandler extends BaseHttpHandler {
 
                 List<Task> prioritizedList = manager.getPrioritizedTasks();
                 if (prioritizedList.isEmpty()) {
-                    sendNotFound(exchange, Endpoint.GET_PRIORITIZED);
+                    sendNotFound(exchange, endpoint);
                     return;
                 }
 
@@ -35,16 +35,16 @@ public class PrioritizedHandler extends BaseHttpHandler {
                 try {
                     jsonPrioritizedList = gson.toJson(prioritizedList);
                 } catch (Exception exception) {
-                    sendServerError(exchange, Endpoint.GET_PRIORITIZED);
+                    sendServerError(exchange, endpoint);
                     System.out.println(exception.getMessage());
                     return;
                 }
 
-                sendText(exchange, Endpoint.GET_PRIORITIZED, jsonPrioritizedList);
+                sendText(exchange, endpoint, jsonPrioritizedList);
 
             }
 
-            case UNKNOWN -> sendFormatException(exchange, Endpoint.UNKNOWN, path);
+            case UNKNOWN -> sendFormatException(exchange, endpoint, path);
         }
     }
 }

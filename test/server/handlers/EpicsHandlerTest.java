@@ -1,19 +1,19 @@
 package server.handlers;
 
-import data.Epic;
-import data.Status;
-import data.Subtask;
-import data.Task;
+import data.*;
 import org.junit.jupiter.api.Test;
 import server.HttpTaskServerTest;
 import server.tokens.TaskListTypeToken;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EpicsHandlerTest extends HttpTaskServerTest {
+class EpicsHandlerTest extends HttpTaskServerTest {
 
     @Test
     void GET_EPIC() {
@@ -29,12 +29,15 @@ public class EpicsHandlerTest extends HttpTaskServerTest {
     @Test
     void POST_NEW_EPIC() {
         shouldReturnStatus200AndBodyOfSuccessAddingAfterAddNewEpic();
+        shouldReturnStatus400AndBodyOfBadRequestAfterTryAddBrokenEpic();
     }
 
     @Test
     void POST_UPDATE_EPIC() {
-        shouldReturnStatus200AndBodyOfSuccessUpdatingAfterUpdateTask();
-        shouldReturnStatus200AndBodyOfUpdatedTaskAfterGetUpdatedTask();
+        shouldReturnStatus200AndBodyOfSuccessUpdatingAfterUpdateEpic();
+        shouldReturnStatus422AndBodyOfUnsupportedAfterTryUpdateEpic();
+        shouldReturnStatus404AndBodyOfNotFoundAfterTryUpdateLostEpic();
+
     }
 
     @Test
@@ -93,11 +96,11 @@ public class EpicsHandlerTest extends HttpTaskServerTest {
         HttpResponse<String> response = responseOfNewPostRequest("epics", epic);
 
         assertEquals(200, response.statusCode());
-        assertEquals("epic adding success", response.body());
+        assertEquals("epic adding success, epicId=3", response.body());
     }
 
     /// Создает новый эпик, постит обновление этого эпика, проверяет статус и тело ответа
-    private void shouldReturnStatus200AndBodyOfSuccessUpdatingAfterUpdateTask() {
+    private void shouldReturnStatus200AndBodyOfSuccessUpdatingAfterUpdateEpic() {
         manager.addEpic(new Epic(null, "FIRST EPIC", "first epic"));
 
         Epic newEpic = new Epic(3, "FIRST EPIC UPDATED", null);
@@ -107,16 +110,30 @@ public class EpicsHandlerTest extends HttpTaskServerTest {
 
         assertEquals("epic updated success", response.body());
 
-    }
-
-    /// Запрашивает обновленный эпик, сверяет его поля, а также статус ответа
-    private void shouldReturnStatus200AndBodyOfUpdatedTaskAfterGetUpdatedTask() {
-        HttpResponse<String> response = responseOfNewGetRequest("epics/3");
-        assertEquals(200, response.statusCode());
-
-        Task requestTask = gson.fromJson(response.body(), Task.class);
+        Epic requestTask = (Epic) manager.getWithoutHistory(3);
         assertEquals("FIRST EPIC UPDATED", requestTask.getTitle());
         assertEquals("first epic", requestTask.getDescription());
+
+    }
+
+    /// Пытается обновить эпик, но в теле эпика не указан ID
+    private void shouldReturnStatus422AndBodyOfUnsupportedAfterTryUpdateEpic() {
+        Epic epic = new Epic(null, "TASK WITHOUT ID", null);
+
+        HttpResponse<String> response = responseOfNewPostRequest("epics/3", epic);
+
+        assertEquals(422, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_UPDATE_EPIC + " 422 unprocessable entity", response.body());
+    }
+
+    /// Пытается обновить эпик с несуществующим id
+    private void shouldReturnStatus404AndBodyOfNotFoundAfterTryUpdateLostEpic() {
+        Epic epic = new Epic(4, "TASK WITH LOST ID", null);
+
+        HttpResponse<String> response = responseOfNewPostRequest("epics/4", epic);
+
+        assertEquals(404, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_UPDATE_EPIC + " 404 not found", response.body());
     }
 
     /// Удаляет эпик и проверяет ответ от сервера
@@ -146,5 +163,38 @@ public class EpicsHandlerTest extends HttpTaskServerTest {
 
         List<Subtask> requestList = gson.fromJson(response.body(), new TaskListTypeToken().getType());
         assertEquals(2, requestList.size());
+    }
+
+    /// Пытается добавить новый эпик, но отправляет сломанный json в теле запроса
+    private void shouldReturnStatus400AndBodyOfBadRequestAfterTryAddBrokenEpic() {
+        String brokenEpic = """
+                {
+                       "id" : "THIS IS FAIL",
+                       "title" : "BROKEN EPIC",
+                       "description" : "broken epic",
+                       "status" : null,
+                       "startTime" : null,
+                       "duration" : 0
+                     }""";
+
+        URI uri = URI.create(host + "epics");
+
+        HttpResponse<String> response;
+        try (HttpClient client = HttpClient.newHttpClient()) {
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString(brokenEpic))
+                    .uri(uri)
+                    .build();
+            HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
+            response = client.send(request, handler);
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return;
+        }
+
+        assertEquals(400, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_NEW_EPIC + " 400 bad request body", response.body());
     }
 }

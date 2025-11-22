@@ -27,7 +27,7 @@ public class HistoryHandler extends BaseHttpHandler {
 
                 List<Task> historyList = manager.getHistory();
                 if (historyList.isEmpty()) {
-                    sendNotFound(exchange, Endpoint.GET_HISTORY);
+                    sendNotFound(exchange, endpoint);
                     return;
                 }
 
@@ -35,16 +35,16 @@ public class HistoryHandler extends BaseHttpHandler {
                 try {
                     jsonHistoryList = gson.toJson(historyList);
                 } catch (Exception exception) {
-                    sendServerError(exchange, Endpoint.GET_HISTORY);
+                    sendServerError(exchange, endpoint);
                     System.out.println(exception.getMessage());
                     return;
                 }
 
-                sendText(exchange, Endpoint.GET_HISTORY, jsonHistoryList);
+                sendText(exchange, endpoint, jsonHistoryList);
 
             }
 
-            case UNKNOWN -> sendFormatException(exchange, Endpoint.UNKNOWN, path);
+            case UNKNOWN -> sendFormatException(exchange, endpoint, path);
         }
     }
 }

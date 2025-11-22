@@ -17,7 +17,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TasksHandlerTest extends HttpTaskServerTest {
+class TasksHandlerTest extends HttpTaskServerTest {
 
     @Test
     void BASE() {
@@ -40,13 +40,17 @@ public class TasksHandlerTest extends HttpTaskServerTest {
     @Test
     void POST_NEW_TASK() {
         shouldReturnStatus200AndBodyOfSuccessAddingAfterAddNewTask();
-        shouldReturnStatus500AndBodyOfServerErrorAfterTryAddingBrokenTask();
+        shouldReturnStatus400AndBodyOfBadRequestAfterTryAddingBrokenTask();
     }
 
     @Test
     void POST_UPDATE_TASK() {
         shouldReturnStatus200AndBodyOfSuccessUpdatingAfterUpdateTask();
-        shouldReturnStatus200AndBodyOfUpdatedTaskAfterGetUpdatedTask();
+        shouldReturnStatus422AndBodyOfUnsupportedAfterTryUpdateTask();
+        shouldReturnStatus404AndBodyOfNotFoundAfterTryUpdateLostTask();
+        shouldReturnStatus422AndBodyOfUnsupportedAfterTryUpdateWrongTask();
+        shouldReturnStatus406AndBodyOfOverlapsAfterTryUpdateIntersectionTask();
+        shouldReturnStatus200AndBodyOfTask2AfterTryGetHistory();
     }
 
     @Test
@@ -133,11 +137,11 @@ public class TasksHandlerTest extends HttpTaskServerTest {
         HttpResponse<String> response = responseOfNewPostRequest("tasks", task3);
 
         assertEquals(200, response.statusCode());
-        assertEquals("task adding success", response.body());
+        assertEquals("task adding success, taskId=3", response.body());
     }
 
     /// Пытается добавить новую задачу через неправильно заполненный json
-    private void shouldReturnStatus500AndBodyOfServerErrorAfterTryAddingBrokenTask() {
+    private void shouldReturnStatus400AndBodyOfBadRequestAfterTryAddingBrokenTask() {
         String brokenString = """
                 {
                   "id": null,
@@ -165,11 +169,14 @@ public class TasksHandlerTest extends HttpTaskServerTest {
             return;
         }
 
-        assertEquals(500, response.statusCode());
-        assertEquals("\t" + Endpoint.POST_NEW_TASK + " 500 Internal Server Error", response.body());
+        assertEquals(400, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_NEW_TASK + " 400 bad request body", response.body());
     }
 
-    /// Обновляет существующую задачу и проверяет ответ от сервера
+    /**
+     * Обновляет существующую задачу и проверяет ответ от сервера,
+     * затем получает ее через менеджер и сверяет все поля
+     */
     private void shouldReturnStatus200AndBodyOfSuccessUpdatingAfterUpdateTask() {
         Task task3 = new Task(
                 2,
@@ -184,19 +191,67 @@ public class TasksHandlerTest extends HttpTaskServerTest {
         assertEquals(200, response.statusCode());
 
         assertEquals("task updated success", response.body());
-    }
 
-    /// Получает обновленную задачу с сервера и сверяет все поля
-    private void shouldReturnStatus200AndBodyOfUpdatedTaskAfterGetUpdatedTask() {
-        HttpResponse<String> response1 = responseOfNewGetRequest("tasks/2");
-        assertEquals(200, response1.statusCode());
-
-        Task requestTask = gson.fromJson(response1.body(), Task.class);
+        Task requestTask = manager.getWithoutHistory(2);
         assertEquals("UPDATED TASK", requestTask.getTitle());
         assertEquals("second task", requestTask.getDescription());
         assertEquals(Status.IN_PROGRESS, requestTask.getStatus());
         assertEquals(LocalDateTime.parse("2025-11-20 10:00", DATE_TIME_FORMATTER), requestTask.getStartTime());
         assertEquals(LocalDateTime.parse("2025-11-20 10:15", DATE_TIME_FORMATTER), requestTask.getEndTime());
+    }
+
+    /// Пытается обновить задачу, но в теле задачи не указан ID
+    private void shouldReturnStatus422AndBodyOfUnsupportedAfterTryUpdateTask() {
+        Task task = new Task(null, "TASK WITHOUT ID", null);
+
+        HttpResponse<String> response = responseOfNewPostRequest("tasks/1", task);
+
+        assertEquals(422, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_UPDATE_TASK + " 422 unprocessable entity", response.body());
+    }
+
+    /// Пытается обновить задачу с несуществующим id
+    private void shouldReturnStatus404AndBodyOfNotFoundAfterTryUpdateLostTask() {
+        Task task = new Task(3, "TASK WITH LOST ID", null);
+
+        HttpResponse<String> response = responseOfNewPostRequest("tasks/3", task);
+
+        assertEquals(404, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_UPDATE_TASK + " 404 not found", response.body());
+    }
+
+    /// Пытается обновить задачу, но в эндпоинте и теле указаны разные существующие id
+    private void shouldReturnStatus422AndBodyOfUnsupportedAfterTryUpdateWrongTask() {
+        Task task = new Task(2, "TASK WITH LOST ID", null);
+
+        HttpResponse<String> response = responseOfNewPostRequest("tasks/1", task);
+
+        assertEquals(422, response.statusCode());
+        assertEquals("\t" + Endpoint.POST_UPDATE_TASK + " 422 unprocessable entity", response.body());
+    }
+
+    /// Пытается обновить задачу, но время пересекается с уже существующей
+    private void shouldReturnStatus406AndBodyOfOverlapsAfterTryUpdateIntersectionTask() {
+        Task task = new Task(
+                1,
+                "UPDATED TASK",
+                null,
+                Status.IN_PROGRESS,
+                LocalDateTime.parse("2025-11-20 10:10", DATE_TIME_FORMATTER),
+                Duration.ofMinutes(10)
+        );
+
+        HttpResponse<String> response = responseOfNewPostRequest("tasks/1", task);
+        assertEquals(406, response.statusCode());
+
+        assertEquals("\tPOST_UPDATE_TASK 406 time overlaps: 2025-11-20 10:10 - 2025-11-20 10:20",
+                response.body());
+    }
+
+    /// Проверяет историю после множества действий по обновлению задач
+    private void shouldReturnStatus200AndBodyOfTask2AfterTryGetHistory() {
+        HttpResponse<String> response = responseOfNewGetRequest("history");
+        assertEquals(404, response.statusCode());
     }
 
     /// Удаляет задачу и проверяет ответ от сервера

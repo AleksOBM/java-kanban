@@ -29,13 +29,13 @@ public class TasksHandler extends BaseHttpHandler {
                 String pathId = path.replaceFirst("/tasks/", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.GET_TASK, path);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
                 Task task = manager.getTask(id);
                 if (task == null) {
-                    sendNotFound(exchange, Endpoint.GET_TASK);
+                    sendNotFound(exchange, endpoint);
                     return;
                 }
 
@@ -43,12 +43,12 @@ public class TasksHandler extends BaseHttpHandler {
                 try {
                     jsonTask = gson.toJson(task);
                 } catch (Exception exception) {
-                    sendServerError(exchange, Endpoint.GET_TASK);
+                    sendServerError(exchange, endpoint);
                     System.out.println(exception.getMessage());
                     return;
                 }
 
-                sendText(exchange, Endpoint.GET_TASK, jsonTask);
+                sendText(exchange, endpoint, jsonTask);
 
             }
 
@@ -56,7 +56,7 @@ public class TasksHandler extends BaseHttpHandler {
 
                 List<Task> taskList = manager.getAllTasks();
                 if (taskList.isEmpty()) {
-                    sendNotFound(exchange, Endpoint.GET_ALL_TASKS);
+                    sendNotFound(exchange, endpoint);
                     return;
                 }
 
@@ -64,11 +64,11 @@ public class TasksHandler extends BaseHttpHandler {
                 try {
                     jsonTaskList = gson.toJson(taskList);
                 } catch (Exception exception) {
-                    sendServerError(exchange, Endpoint.GET_ALL_TASKS);
+                    sendServerError(exchange, endpoint);
                     System.out.println(exception.getMessage());
                     return;
                 }
-                sendText(exchange, Endpoint.GET_ALL_TASKS, jsonTaskList);
+                sendText(exchange, endpoint, jsonTaskList);
 
             }
 
@@ -81,15 +81,17 @@ public class TasksHandler extends BaseHttpHandler {
                 try {
                     task = gson.fromJson(body, Task.class);
                 } catch (Exception e) {
-                    sendServerError(exchange, Endpoint.POST_NEW_TASK);
+                    sendBadRequestBoby(exchange, endpoint);
                     System.out.println(e.getMessage());
                     return;
                 }
 
-                if (manager.addTask(task) == null) {
-                    sendHasOverlaps(exchange, Endpoint.POST_NEW_TASK, task);
+                Task newTask = manager.addTask(task);
+
+                if (newTask == null) {
+                    sendHasOverlaps(exchange, endpoint, task);
                 } else {
-                    sendText(exchange, Endpoint.POST_NEW_TASK,"task adding success");
+                    sendText(exchange, endpoint,"task adding success, taskId=" + newTask.getId());
                 }
 
             }
@@ -99,7 +101,7 @@ public class TasksHandler extends BaseHttpHandler {
                 String pathId = path.replaceFirst("/tasks/", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.POST_UPDATE_TASK, path);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
@@ -110,15 +112,24 @@ public class TasksHandler extends BaseHttpHandler {
                 try {
                     task = gson.fromJson(body, Task.class);
                 } catch (Exception e) {
-                    sendServerError(exchange, Endpoint.POST_UPDATE_TASK);
+                    sendBadRequestBoby(exchange, endpoint);
                     System.out.println(e.getMessage());
                     return;
                 }
 
+                Integer taskId = task.getId();
+                if (taskId == null || id != taskId) {
+                    sendUnprocessableEntity(exchange, endpoint);
+                    return;
+                } else if (manager.getWithoutHistory(taskId) == null) {
+                    sendNotFound(exchange, endpoint);
+                    return;
+                }
+
                 if (manager.updateTask(task) == null) {
-                    sendNotFound(exchange, Endpoint.POST_UPDATE_TASK);
+                    sendHasOverlaps(exchange, endpoint, task);
                 } else {
-                    sendText(exchange, Endpoint.POST_UPDATE_TASK,"task updated success");
+                    sendText(exchange, endpoint,"task updated success");
                 }
 
             }
@@ -128,19 +139,19 @@ public class TasksHandler extends BaseHttpHandler {
                 String pathId = path.replaceFirst("/tasks/", "");
                 int id = parsePathId(pathId);
                 if (id == -1) {
-                    sendFormatException(exchange, Endpoint.DELETE_TASK, path);
+                    sendFormatException(exchange, endpoint, path);
                     return;
                 }
 
                 if (manager.removeTask(id)) {
-                    sendText(exchange, Endpoint.DELETE_TASK, "task removed success");
+                    sendText(exchange, endpoint, "task removed success");
                 } else {
-                    sendServerError(exchange, Endpoint.DELETE_TASK);
+                    sendNotFound(exchange, endpoint);
                 }
 
             }
 
-            case UNKNOWN -> sendFormatException(exchange, Endpoint.UNKNOWN, path);
+            case UNKNOWN -> sendFormatException(exchange, endpoint, path);
         }
 
 
