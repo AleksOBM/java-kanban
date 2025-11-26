@@ -40,7 +40,7 @@ class TaskManagerTest {
     @BeforeEach
     void beforeEach() {
         // Создать новый менеджер задач
-        manager = Managers.getTaskManager(TaskManagerType.IN_MEMORY);
+        manager = new InMemoryTaskManager();
 
         // Создать новую задачу
         task = new Task(

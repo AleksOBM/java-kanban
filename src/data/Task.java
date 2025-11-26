@@ -25,6 +25,7 @@ public class Task implements Comparable<Task> {
     /// Продолжительность задачи в минутах
     protected Duration duration;
 
+    /// Формат даты и времени
     protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     /// Конструктор 1
