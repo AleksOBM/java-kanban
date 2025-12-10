@@ -32,8 +32,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements Proper
 
     /// Конструктор
     FileBackedTaskManager(File newFile) {
+        file = newFile;
         try {
-            loadFile(newFile);
             updateDataFromFile();
         } catch (ManagerSaveException e) {
             System.out.println(e.getMessage());
@@ -96,10 +96,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements Proper
 
     /// Перезагрузить данные из файла2
     public void updateDataFromFile() throws ManagerSaveException {
-        loadObjectBuffer();
+        loadFile(file);
 
         super.removeAllTasks();
         super.removeAllEpics();
+        objectToList.clear();
+
+        loadObjectBuffer();
 
         if (objectToList.isEmpty()) {
             return;
@@ -133,9 +136,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements Proper
                         continue;
                     }
 
-                    epic.addSubtaskId(subtaskId);
-
                     idToSubtask.put(subtaskId, subtask);
+                    epic.addSubtaskId(subtaskId);
                     updateEpicsStatus(epicId);
                     updateEpicTime(epic);
                 }

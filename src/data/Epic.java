@@ -31,6 +31,7 @@ public class Epic extends Task {
     public void addSubtaskId(Integer subtaskId) {
         subtaskIds.remove(subtaskId);
         subtaskIds.add(subtaskId);
+        subtaskIds.sort(Integer::compareTo);
     }
 
     @Override

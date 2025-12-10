@@ -61,7 +61,6 @@ public class InMemoryTaskManager implements TaskManager {
             historyManager.add(newSubtask);
             return newSubtask;
         }
-        System.out.println("Попытка получения несуществующей таски");
         return null;
     }
 
@@ -74,7 +73,6 @@ public class InMemoryTaskManager implements TaskManager {
         } else if (idToSubtask.containsKey(id)) {
             return copyOfSubtask(id);
         }
-        System.out.println("Попытка получения несуществующей таски");
         return null;
     }
 
@@ -576,7 +574,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeAllTasks() {
         for (int taskId : idToTask.keySet()) {
             historyManager.remove(taskId);
-            prioritizedTasks.remove(idToTask.get(taskId));
+            prioritizedTasks.removeIf(task -> task.getId() == taskId);
         }
         idToTask.clear();
     }
