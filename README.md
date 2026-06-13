@@ -1,7 +1,14 @@
 # java-kanban
 
-## Бэкэнд трекера задач
+![Static Badge](https://img.shields.io/badge/Java-21-green)
+![Static Badge](https://img.shields.io/badge/HttpServer-blue)
+![Static Badge](https://img.shields.io/badge/Java--NIO-green)
+![Static Badge](https://img.shields.io/badge/Gson-c49654)
+![Static Badge](https://img.shields.io/badge/CSV-567665)
+![Static Badge](https://img.shields.io/badge/JUnit-5-orange)
+![Static Badge](https://img.shields.io/badge/Maven-orange)
 
+## Бэкэнд трекера задач
 ![view](base-view.png)
 
 ### Типы задач
@@ -54,9 +61,3 @@
 - remove
 - exit
 
-### Примененные технологии
-- Java 21
-- HttpServer
-- google.Gson
-- java.nio.file
-- junit.jupiter
