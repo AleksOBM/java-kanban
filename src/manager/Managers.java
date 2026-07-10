@@ -18,7 +18,7 @@ public class Managers {
             }
             case FILE_BACKED -> {
                 return FileBackedTaskManager.getInstance(new File(
-                        "src/autosave/",
+                        "./",
                         "data.csv"
                 ));
             }
