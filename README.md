@@ -9,7 +9,8 @@
 ![Static Badge](https://img.shields.io/badge/Maven-orange)
 
 ## Бэкэнд трекера задач
-![view](base-view.png)
+
+<img alt="view" src="base-view.png" width="500"/>
 
 ### Типы задач
 - Подзадача (Subtask)
@@ -30,7 +31,9 @@
 
 ### Хранение данных
 Данные задач хранятся в таблице CSV  
-![data](data-csv.png)
+
+<img alt="data" src="data-csv.png" width="600"/>
+
 Файл и каталог с таблицей создаются автоматически  
 в /src/autosave/data.csv  
 Есть возможность работы только в оперативной памяти, без csv   
