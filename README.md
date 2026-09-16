@@ -10,7 +10,9 @@
 
 ## Бэкэнд трекера задач
 
-<img alt="view" src="base-view.png" width="500"/>
+**Учебный проект**
+
+<img alt="view" src=".img/base-view.png" width="500"/>
 
 ### Типы задач
 - Подзадача (Subtask)
@@ -32,7 +34,7 @@
 ### Хранение данных
 Данные задач хранятся в таблице CSV  
 
-<img alt="data" src="data-csv.png" width="600"/>
+<img alt="data" src=".img/data-csv.png" width="600"/>
 
 Файл и каталог с таблицей создаются автоматически  
 в /src/autosave/data.csv  
