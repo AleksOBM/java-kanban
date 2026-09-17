@@ -1,0 +1,783 @@
+/* ============================================================
+   Общие
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen, Ubuntu, sans-serif;
+    background: #1a1a1a;
+    color: #e2e8f0;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ============================================================
+   Навигация
+   ============================================================ */
+.navbar {
+    background: #0f0f0f;
+    padding: 14px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.nav-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.nav-link {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid transparent;
+    color: #cbd5e0;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.nav-link.active {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+}
+
+/* ============================================================
+   Основной контент
+   ============================================================ */
+main {
+    padding: 28px 0 60px;
+}
+
+.loading {
+    text-align: center;
+    padding: 60px;
+    color: #718096;
+    font-size: 1rem;
+}
+
+.error {
+    background: #742a2a;
+    color: #fed7d7;
+    padding: 14px 20px;
+    border-radius: 10px;
+    margin: 16px 0;
+    border-left: 4px solid #f56565;
+}
+
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: #718096;
+    font-size: 0.95rem;
+    font-style: italic;
+}
+
+/* ============================================================
+   Заголовки страниц
+   ============================================================ */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.page-header h2,
+.page-header h3 {
+    margin: 0;
+    color: #fff;
+    font-weight: 600;
+}
+
+.page-header h2 {
+    font-size: 1.5rem;
+}
+
+.page-header h3 {
+    font-size: 1.2rem;
+}
+
+/* ============================================================
+   Канбан-доска
+   ============================================================ */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: start;
+    min-height: 70vh;
+}
+
+.kanban-column {
+    background: #242424;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.kanban-column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.kanban-column-header h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #fff;
+    margin: 0;
+}
+
+.kanban-count {
+    background: rgba(255, 255, 255, 0.12);
+    color: #cbd5e0;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.kanban-column-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    max-height: 70vh;
+    padding-right: 4px;
+}
+
+.kanban-column-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.kanban-column-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.kanban-empty {
+    background: rgba(255, 255, 255, 0.05);
+    color: #718096;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+/* Кнопка "+" внизу колонки */
+.kanban-add {
+    background: #2f2f2f;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.15s;
+    align-self: flex-start;
+    line-height: 1;
+}
+
+.kanban-add:hover {
+    background: #667eea;
+    transform: scale(1.08);
+}
+
+/* ============================================================
+   Эпик на канбане — визуально отличается от задачи
+   ============================================================ */
+.kanban-epic {
+    background: #1e1e1e;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(193, 123, 106, 0.3);
+    transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.kanban-epic:hover {
+    box-shadow: 0 5px 18px rgba(193, 123, 106, 0.25);
+    border-color: rgba(193, 123, 106, 0.6);
+}
+
+.kanban-epic-orphan {
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.kanban-epic-orphan .kanban-epic-header {
+    background: #4a5568;
+}
+
+.kanban-epic-header {
+    background: #c17b6a;
+    color: #fff;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.15s;
+    gap: 8px;
+}
+
+.kanban-epic-header:hover {
+    background: #cf8574;
+}
+
+.kanban-epic-head-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.kanban-epic-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.kanban-epic-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.kanban-epic-head-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.kanban-epic-counter {
+    background: rgba(0, 0, 0, 0.25);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+/* Прогресс-бар эпика */
+.kanban-epic-progress {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+
+.kanban-epic-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #48bb78, #68d391);
+    transition: width 0.3s ease;
+}
+
+.kanban-menu-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 6px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.kanban-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.kanban-epic-body {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ============================================================
+   Обычная задача на канбан-доске (отличается синей полоской)
+   ============================================================ */
+.kanban-task {
+    background: #2a2a2a;
+    border-left: 4px solid #667eea;
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: #e2e8f0;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.kanban-task:hover {
+    background: #333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.kanban-task-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 4px;
+    color: #fff;
+}
+
+.kanban-task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: #a0aec0;
+    min-height: 1em;
+}
+
+/* ============================================================
+   Сабтаска внутри эпика
+   ============================================================ */
+.kanban-subtask {
+    background: #2a2a2a;
+    color: #e2e8f0;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s, border-color 0.15s;
+    border-left: 2px solid transparent;
+}
+
+.kanban-subtask:hover {
+    background: #333;
+    border-left-color: #c17b6a;
+}
+
+.kanban-subtask-done {
+    opacity: 0.65;
+}
+
+.kanban-subtask-done .kanban-subtask-title {
+    text-decoration: line-through;
+    color: #718096;
+}
+
+.kanban-subtask-status {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    width: 16px;
+    text-align: center;
+}
+
+.kanban-subtask-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.kanban-subtask-duration {
+    color: #a0aec0;
+    font-size: 0.75rem;
+    margin-left: auto;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1px 6px;
+    border-radius: 8px;
+}
+
+.kanban-subtask-empty {
+    color: #666;
+    font-size: 0.82rem;
+    padding: 6px 10px;
+    text-align: center;
+    font-style: italic;
+}
+
+/* ============================================================
+   Карточки (страницы /tasks, /subtasks, /epics)
+   ============================================================ */
+.task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.task-card {
+    background: #242424;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+}
+
+.task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.task-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.task-description {
+    color: #a0aec0;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+.task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.task-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e0;
+    white-space: nowrap;
+}
+
+.tag-status-open {
+    background: rgba(102, 126, 234, 0.2);
+    color: #a3bffa;
+}
+
+.tag-status-in_progress {
+    background: rgba(237, 137, 54, 0.2);
+    color: #fbd38d;
+}
+
+.tag-status-done {
+    background: rgba(72, 187, 120, 0.2);
+    color: #9ae6b4;
+}
+
+.tag-priority {
+    background: rgba(159, 122, 234, 0.2);
+    color: #d6bcfa;
+}
+
+.tag-epic {
+    background: rgba(237, 137, 54, 0.15);
+    color: #f6ad55;
+}
+
+.task-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ============================================================
+   Кнопки
+   ============================================================ */
+.btn {
+    padding: 7px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: #2f2f2f;
+    color: #e2e8f0;
+    transition: all 0.15s;
+}
+
+.btn:hover {
+    background: #3a3a3a;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+}
+
+.btn-primary:hover {
+    background: #5a67d8;
+}
+
+.btn-danger {
+    background: #fc8181;
+    color: #fff;
+    border-color: #fc8181;
+}
+
+.btn-danger:hover {
+    background: #f56565;
+}
+
+.btn-success {
+    background: #48bb78;
+    color: #fff;
+    border-color: #48bb78;
+}
+
+.btn-success:hover {
+    background: #38a169;
+}
+
+/* ============================================================
+   Фильтры
+   ============================================================ */
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filters input,
+.filters select {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: #242424;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+}
+
+.filters input:focus,
+.filters select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* ============================================================
+   Формы
+   ============================================================ */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #cbd5e0;
+    font-size: 0.9rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: #1e1e1e;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.15s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* ============================================================
+   Модальное окно
+   ============================================================ */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s;
+}
+
+.modal-content {
+    background: #242424;
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 520px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideIn 0.25s;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-close {
+    position: absolute;
+    right: 20px;
+    top: 14px;
+    font-size: 26px;
+    color: #718096;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+.modal-close:hover {
+    color: #fff;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+/* ============================================================
+   Страница эпика
+   ============================================================ */
+.epic-detail-header {
+    background: #242424;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    margin-bottom: 20px;
+    border-left: 4px solid #c17b6a;
+}
+
+.epic-detail-header h2 {
+    margin: 0 0 12px 0;
+    color: #fff;
+}
+
+.epic-description {
+    color: #a0aec0;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+/* ============================================================
+   Адаптив
+   ============================================================ */
+@media (max-width: 900px) {
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+
+    .kanban-column {
+        min-height: auto;
+    }
+
+    .navbar .container {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .nav-links {
+        justify-content: center;
+    }
+
+    .task-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kanban-epic {
+    flex-shrink: 0;
+}
+

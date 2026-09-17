@@ -6,6 +6,7 @@ import ru.practicum.kanban.data.Task;
 import ru.practicum.kanban.manager.TaskManager;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public class HistoryHandler extends BaseHttpHandler {
@@ -24,11 +25,11 @@ public class HistoryHandler extends BaseHttpHandler {
 		switch (endpoint) {
 
 			case GET_HISTORY -> {
-
 				List<Task> historyList = manager.getHistory();
-				if (historyList.isEmpty()) {
-					sendNotFound(exchange, endpoint);
-					return;
+
+				// ✅ Пустая история — это нормально, отдаём 200 с пустым массивом
+				if (historyList == null) {
+					historyList = Collections.emptyList();
 				}
 
 				String jsonHistoryList;
@@ -41,7 +42,6 @@ public class HistoryHandler extends BaseHttpHandler {
 				}
 
 				sendText(exchange, endpoint, jsonHistoryList);
-
 			}
 
 			case UNKNOWN -> sendFormatException(exchange, endpoint, path);

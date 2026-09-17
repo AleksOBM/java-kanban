@@ -1,4 +1,4 @@
-package ru.practicum.kanban;
+package ru.practicum.kanban.cli;
 
 import ru.practicum.kanban.data.*;
 import ru.practicum.kanban.manager.FileBackedTaskManager;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
-public class Main {
+public class ConsoleCLI {
 
 	private static TaskManager manager;
 	private static final Scanner scanner = new Scanner(System.in);

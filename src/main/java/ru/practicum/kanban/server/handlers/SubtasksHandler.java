@@ -100,7 +100,8 @@ public class SubtasksHandler extends BaseHttpHandler {
 				if (newSubtask == null) {
 					sendHasOverlaps(exchange, endpoint, subtask);
 				} else {
-					sendText(exchange, endpoint, "subtask adding success, subtaskId=" + newSubtask.getId());
+					String json = gson.toJson("subtask adding success, subtaskId=" + newSubtask.getId());
+					sendText(exchange, endpoint, json);
 				}
 
 			}
@@ -137,7 +138,8 @@ public class SubtasksHandler extends BaseHttpHandler {
 				if (manager.updateSubtask(subtask) == null) {
 					sendHasOverlaps(exchange, endpoint, subtask);
 				} else {
-					sendText(exchange, endpoint, "subtask updated success");
+					String json = gson.toJson("subtask updated success");
+					sendText(exchange, endpoint, json);
 				}
 
 			}
@@ -152,7 +154,8 @@ public class SubtasksHandler extends BaseHttpHandler {
 				}
 
 				if (manager.removeSubtask(id)) {
-					sendText(exchange, endpoint, "subtask removed success");
+					String json = gson.toJson("subtask deleted success");
+					sendText(exchange, endpoint, json);
 				} else {
 					sendNotFound(exchange, endpoint);
 				}

@@ -10,12 +10,18 @@ import ru.practicum.kanban.manager.Managers;
 import ru.practicum.kanban.manager.TaskManager;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.regex.Pattern;
 
 public class BaseHttpHandler implements HttpHandler, Property {
 
 	protected final TaskManager manager;
 	protected static Gson gson = Managers.getGson();
+
+	// Пути к статике в classpath
+	private static final String STATIC_ROOT = "/static";
+	private static final String DEFAULT_FILE = "/index.html";
 
 	public BaseHttpHandler(TaskManager manager) {
 		this.manager = manager;
@@ -30,21 +36,106 @@ public class BaseHttpHandler implements HttpHandler, Property {
 
 		switch (endpoint) {
 			case BASE -> {
-				String text =
-						"\tWelcome to java server.\n" +
-								"\tUse next endpoints:\n" +
-								"\thttp://localhost:" + PORT + "/tasks\n" +
-								"\thttp://localhost:" + PORT + "/subtasks\n" +
-								"\thttp://localhost:" + PORT + "/epics\n" +
-								"\thttp://localhost:" + PORT + "/history\n" +
-								"\thttp://localhost:" + PORT + ":/prioritized";
-
-				sendText(exchange, Endpoint.BASE, text);
+				// Вместо текстового приветствия — отдаём index.html
+				if (!tryServeStaticFile(exchange, DEFAULT_FILE)) {
+					// Fallback: если index.html нет — старое текстовое приветствие
+					String text =
+							"\tWelcome to java server.\n" +
+									"\tUse next endpoints:\n" +
+									"\thttp://localhost:" + PORT + "/tasks\n" +
+									"\thttp://localhost:" + PORT + "/subtasks\n" +
+									"\thttp://localhost:" + PORT + "/epics\n" +
+									"\thttp://localhost:" + PORT + "/history\n" +
+									"\thttp://localhost:" + PORT + "/prioritized";
+					sendText(exchange, Endpoint.BASE, text);
+				}
 			}
 
-			case UNKNOWN -> sendFormatException(exchange, Endpoint.UNKNOWN, path);
+			case UNKNOWN -> {
+				// Пытаемся отдать статику (CSS/JS/картинки для UI)
+				// Если не получилось — 405, как раньше
+				if (!tryServeStaticFile(exchange, path)) {
+					sendFormatException(exchange, Endpoint.UNKNOWN, path);
+				}
+			}
 		}
 	}
+
+	/**
+	 * Пытается отдать статический файл из classpath.
+	 * Возвращает true, если файл был отдан (или отправлен 404).
+	 * Возвращает false, если это не похоже на статику — тогда вызывающий
+	 * код может обработать запрос по-своему (например, как 405).
+	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	private boolean tryServeStaticFile(HttpExchange exchange, String path) throws IOException {
+		if (isApiPath(path)) {
+			return false;
+		}
+
+		String resourcePath = path.equals("/") ? DEFAULT_FILE : path;
+
+		// Защита от directory traversal
+		if (resourcePath.contains("..")) {
+			return false;
+		}
+
+		// Проверяем существование ресурса через getResource
+		if (getClass().getResource(STATIC_ROOT + resourcePath) == null) {
+			// SPA fallback для путей без расширения
+			if (!hasFileExtension(resourcePath)
+					&& getClass().getResource(STATIC_ROOT + DEFAULT_FILE) != null) {
+				resourcePath = DEFAULT_FILE;
+			} else {
+				return false;
+			}
+		}
+
+		// Единственное место, где открываем поток — сразу в try-with-resources
+		try (InputStream is = getClass().getResourceAsStream(STATIC_ROOT + resourcePath);
+		     OutputStream os = exchange.getResponseBody()) {
+
+			assert is != null;
+			byte[] content = is.readAllBytes();
+			exchange.getResponseHeaders().set("Content-Type", getContentType(resourcePath));
+			exchange.sendResponseHeaders(200, content.length);
+			os.write(content);
+		}
+		System.out.println("\tSTATIC 200 " + resourcePath);
+		return true;
+	}
+
+	/** Проверяет, относится ли путь к API (чтобы не перехватывать его статикой). */
+	private boolean isApiPath(String path) {
+		return path.startsWith("/tasks")
+				|| path.startsWith("/subtasks")
+				|| path.startsWith("/epics")
+				|| path.startsWith("/history")
+				|| path.startsWith("/prioritized");
+	}
+
+	/** Проверяет, есть ли у файла расширение (например, .css, .js, .png). */
+	private boolean hasFileExtension(String path) {
+		int lastSlash = path.lastIndexOf('/');
+		int lastDot = path.lastIndexOf('.');
+		return lastDot > lastSlash;
+	}
+
+	/** Определяет Content-Type по расширению файла. */
+	private String getContentType(String path) {
+		if (path.endsWith(".html")) return "text/html; charset=UTF-8";
+		if (path.endsWith(".css"))  return "text/css; charset=UTF-8";
+		if (path.endsWith(".js"))   return "application/javascript; charset=UTF-8";
+		if (path.endsWith(".json")) return "application/json; charset=UTF-8";
+		if (path.endsWith(".png"))  return "image/png";
+		if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
+		if (path.endsWith(".svg"))  return "image/svg+xml";
+		if (path.endsWith(".ico"))  return "image/x-icon";
+		if (path.endsWith(".woff2")) return "font/woff2";
+		return "application/octet-stream";
+	}
+
+	// ==================== Утилиты для отправки ответов ====================
 
 	/// Для отправки общего ответа в случае успеха
 	protected void sendText(HttpExchange exchange, Endpoint endpoint, String text) throws IOException {
@@ -195,5 +286,4 @@ public class BaseHttpHandler implements HttpHandler, Property {
 
 		return Endpoint.UNKNOWN;
 	}
-
 }

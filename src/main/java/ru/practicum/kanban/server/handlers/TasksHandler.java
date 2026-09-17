@@ -91,7 +91,9 @@ public class TasksHandler extends BaseHttpHandler {
 				if (newTask == null) {
 					sendHasOverlaps(exchange, endpoint, task);
 				} else {
-					sendText(exchange, endpoint, "task adding success, taskId=" + newTask.getId());
+
+					String json = gson.toJson("task adding success, taskId=" + newTask.getId());
+					sendText(exchange, endpoint, json);
 				}
 
 			}
@@ -129,7 +131,8 @@ public class TasksHandler extends BaseHttpHandler {
 				if (manager.updateTask(task) == null) {
 					sendHasOverlaps(exchange, endpoint, task);
 				} else {
-					sendText(exchange, endpoint, "task updated success");
+					String json = gson.toJson("task updated success");
+					sendText(exchange, endpoint, json);
 				}
 
 			}
@@ -144,7 +147,8 @@ public class TasksHandler extends BaseHttpHandler {
 				}
 
 				if (manager.removeTask(id)) {
-					sendText(exchange, endpoint, "task removed success");
+					String json = gson.toJson("task deleted success");
+					sendText(exchange, endpoint, json);
 				} else {
 					sendNotFound(exchange, endpoint);
 				}

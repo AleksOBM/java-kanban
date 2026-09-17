@@ -97,7 +97,8 @@ public class EpicsHandler extends BaseHttpHandler {
 					return;
 				}
 
-				sendText(exchange, endpoint, "epic adding success, epicId=" + epicId);
+				String json = gson.toJson("epic adding success, epicId=" + epicId);
+				sendText(exchange, endpoint, json);
 
 			}
 
@@ -131,7 +132,8 @@ public class EpicsHandler extends BaseHttpHandler {
 				if (manager.updateEpic(epic) == null) {
 					sendNotFound(exchange, endpoint);
 				} else {
-					sendText(exchange, endpoint, "epic updated success");
+					String json = gson.toJson("epic updated success");
+					sendText(exchange, endpoint, json);
 				}
 
 			}
@@ -146,7 +148,8 @@ public class EpicsHandler extends BaseHttpHandler {
 				}
 
 				if (manager.removeEpic(id)) {
-					sendText(exchange, endpoint, "epic removed success");
+					String json = gson.toJson("epic deleted success");
+					sendText(exchange, endpoint, json);
 				} else {
 					sendNotFound(exchange, endpoint);
 				}
