@@ -43,7 +43,13 @@
 
 <img alt="data" src=".img/data-csv.png" width="600"/>
 
-Есть возможность работы только в оперативной памяти, без csv   
+Есть возможность работы только в оперативной памяти, без csv  
+Для этого заменить значение в строке:  
+```java
+// Установить IN_MEMORY вместо FILE_BACKED
+Managers.getTaskManager(TaskManagerType.FILE_BACKED)
+```
+
 История изменений всегда хранятся только в оперативной памяти  
 
 ### Frontend
