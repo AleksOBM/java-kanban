@@ -77,6 +77,10 @@ Commands:
 
 ### Как запустить
 - Склонировать проект
+- Добавить необходимые библиотеки
+
+<img alt="libs.png" src=".img/libs.png" width="250"/>
+
 - Запустить HttpTaskServer.java
 - Открыть в браузере localhost:8080
 
